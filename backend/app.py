@@ -72,11 +72,12 @@ class ConnectAuthRequest(BaseModel):
 _img_cache: dict = {}
 
 @app.get("/api/img")
-async def proxy_image(url: str = Query(...)):
+async def proxy_image(url: str = Query(...), v: Optional[str] = Query(None)):
     """Fetch an Autobell vehicle photo, blur supplier logos, and return the result."""
-    if url in _img_cache:
-        return Response(content=_img_cache[url], media_type="image/jpeg",
-                        headers={"Cache-Control": "public, max-age=86400"})
+    cache_key = f"{url}_{v or 'v3'}"
+    if cache_key in _img_cache:
+        return Response(content=_img_cache[cache_key], media_type="image/jpeg",
+                        headers={"Cache-Control": "public, max-age=3600, must-revalidate"})
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(url, headers={"Referer": "https://www.autobellglobal.com/"})
@@ -87,11 +88,11 @@ async def proxy_image(url: str = Query(...)):
             from backend.image_sanitizer import sanitize_image
             content = sanitize_image(content)
         except Exception:
-            pass  # Si OpenCV no está disponible, servir imagen original
+            pass  # Fallback si falla
         if len(_img_cache) < 500:
-            _img_cache[url] = content
+            _img_cache[cache_key] = content
         return Response(content=content, media_type="image/jpeg",
-                        headers={"Cache-Control": "public, max-age=86400"})
+                        headers={"Cache-Control": "public, max-age=3600, must-revalidate"})
     except httpx.RequestError as e:
         raise HTTPException(status_code=502, detail=str(e))
 # ─────────────────────────────────────────────────────────────────────────────

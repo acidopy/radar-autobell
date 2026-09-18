@@ -26,19 +26,21 @@ def _blur_box(image: np.ndarray, box: Box) -> None:
     if roi.size == 0:
         return
     # Large enough kernel to make logos, license plates, and text unreadable while preserving natural background.
-    k = max(25, int(min(w, h) * 0.70) | 1)
+    k = max(35, int(min(w, h) * 0.90) | 1)
     if k % 2 == 0:
         k += 1
-    image[y:y + h, x:x + w] = cv2.GaussianBlur(roi, (k, k), 0)
+    blurred = cv2.GaussianBlur(roi, (k, k), 0)
+    blurred = cv2.GaussianBlur(blurred, (k, k), 0)
+    image[y:y + h, x:x + w] = blurred
 
 
 def _find_top_right_watermark_boxes(image: np.ndarray) -> List[Box]:
     """Cover the supplier's consistently placed two-line upper-right watermark on all photos."""
     height, width = image.shape[:2]
-    if width < 100 or height < 100:
+    if width < 80 or height < 80:
         return []
     # The watermark is printed in the upper right quadrant on all supplier vehicle photos.
-    return [_clamp_box((int(0.62 * width), 0, int(0.38 * width), int(0.18 * height)), width, height)]
+    return [_clamp_box((int(0.55 * width), 0, int(0.45 * width), int(0.22 * height)), width, height)]
 
 
 def _find_banner_boxes(image: np.ndarray) -> List[Box]:
@@ -70,10 +72,10 @@ def _find_plate_boxes(image: np.ndarray) -> List[Box]:
     for c in contours:
         x, y, bw, bh = cv2.boundingRect(c)
         aspect = bw / float(bh) if bh > 0 else 0
-        # Plate dimensions in vehicle photos: aspect 1.8-6.0, width 7-40% of image width, height 2-18% of image height
-        if 1.8 <= aspect <= 6.0 and 0.07 * width <= bw <= 0.40 * width and 0.02 * height <= bh <= 0.18 * height:
-            pad_x = int(bw * 0.12)
-            pad_y = int(bh * 0.18)
+        # Plate dimensions in vehicle photos: aspect 1.6-6.2, width 6-42% of image width, height 2-20% of image height
+        if 1.6 <= aspect <= 6.2 and 0.06 * width <= bw <= 0.42 * width and 0.02 * height <= bh <= 0.20 * height:
+            pad_x = int(bw * 0.15)
+            pad_y = int(bh * 0.20)
             bx = max(0, x - pad_x)
             by = max(0, y + y_start - pad_y)
             bw_exp = min(width - bx, bw + 2 * pad_x)
