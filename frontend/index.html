@@ -941,6 +941,381 @@
       display: none;
     }
 
+    /* ── CALCULADORA DE COSTOS Y RENTABILIDAD (MODO VENDEDOR) ── */
+    .calc-section {
+      width: min(1200px, calc(100% - 32px));
+      margin: 20px auto 10px;
+      background: linear-gradient(180deg, rgba(20,20,23,0.98) 0%, rgba(14,14,17,0.98) 100%);
+      border: 1px solid rgba(232,193,117,0.35);
+      border-radius: var(--radius);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 25px rgba(232,193,117,0.06);
+      padding: 24px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .calc-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .calc-title-group h2 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--white);
+      margin: 4px 0 2px;
+    }
+
+    .calc-badge {
+      display: inline-block;
+      background: var(--gold);
+      color: #000;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .calc-subtitle {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .calc-btn-action {
+      background: var(--soft-ink);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 7px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .calc-btn-action:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .calc-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .calc-card {
+      background: var(--soft-ink);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 18px;
+    }
+
+    .calc-card-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .calc-card-tag {
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .calc-card-tag.gold {
+      background: rgba(232,193,117,0.15);
+      color: var(--gold);
+      border: 1px solid rgba(232,193,117,0.3);
+    }
+
+    .calc-inputs-block {
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed rgba(255,255,255,0.07);
+    }
+    .calc-inputs-block:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .calc-block-header {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .calc-input-group {
+      margin-bottom: 12px;
+    }
+    .calc-input-group label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .calc-input-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--black);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .calc-input-wrap:focus-within {
+      border-color: var(--gold);
+    }
+
+    .calc-curr {
+      padding: 7px 10px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--muted);
+      background: rgba(255,255,255,0.03);
+      border-right: 1px solid var(--line);
+      user-select: none;
+    }
+
+    .calc-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 8px 10px;
+      color: var(--white);
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .calc-qty-control {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .calc-qty-presets {
+      display: flex;
+      gap: 4px;
+    }
+    .btn-qty {
+      background: var(--black);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 6px 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-qty:hover, .btn-qty.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #000;
+    }
+
+    .calc-alert {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      line-height: 1.4;
+      margin-bottom: 14px;
+    }
+    .calc-alert.warning {
+      background: rgba(232,193,117,0.12);
+      border: 1px solid rgba(232,193,117,0.4);
+      color: #fbbf24;
+    }
+    .calc-alert.danger {
+      background: rgba(229,9,20,0.12);
+      border: 1px solid rgba(229,9,20,0.4);
+      color: #f87171;
+    }
+
+    .calc-kpis-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .calc-kpi-card {
+      background: var(--black);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 12px 10px;
+      text-align: center;
+    }
+    .calc-kpi-card.highlight-final {
+      border-color: rgba(229,9,20,0.35);
+      background: rgba(229,9,20,0.06);
+    }
+    .calc-kpi-card.profit-card {
+      border-color: rgba(34,197,94,0.35);
+      background: rgba(34,197,94,0.06);
+    }
+
+    .calc-kpi-label {
+      font-size: 0.66rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .calc-kpi-val {
+      font-size: 1.12rem;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 2px;
+      line-height: 1.2;
+    }
+    .calc-kpi-val.red { color: var(--red); }
+    .calc-kpi-val.green { color: var(--green); }
+    .calc-kpi-val.gold { color: var(--gold); }
+
+    .calc-kpi-sub {
+      font-size: 0.63rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .calc-breakdown-box {
+      background: var(--black);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    .calc-breakdown-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .calc-breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+    .calc-breakdown-row .b-name { color: var(--muted); }
+    .calc-breakdown-row .b-val { font-weight: 700; color: var(--white); }
+    .calc-breakdown-row .b-val.green { color: var(--green); }
+    .calc-breakdown-row .b-val.red { color: var(--red); }
+
+    .calc-breakdown-divider {
+      height: 1px;
+      background: var(--line);
+      margin: 8px 0;
+    }
+
+    .calc-breakdown-total {
+      font-size: 0.88rem;
+      font-weight: 800;
+      margin-bottom: 0;
+      padding-top: 2px;
+    }
+
+    .calc-lot-box {
+      background: linear-gradient(135deg, rgba(232,193,117,0.06) 0%, rgba(20,20,23,0.8) 100%);
+      border: 1px solid rgba(232,193,117,0.3);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+    }
+
+    .calc-lot-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .calc-lot-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--white);
+    }
+
+    .calc-lot-tag {
+      background: var(--gold);
+      color: #000;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .calc-lot-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      text-align: center;
+    }
+
+    .calc-lot-item {
+      background: var(--soft-ink);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .calc-lot-item.highlight-lot {
+      border-color: rgba(34,197,94,0.4);
+      background: rgba(34,197,94,0.08);
+    }
+    .calc-lot-item .l-lbl {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .calc-lot-item .l-val {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: var(--white);
+    }
+    .calc-lot-item .l-val.green { color: var(--green); }
+    .calc-lot-item .l-val.red { color: var(--red); }
+
     /* ── RESPONSIVE MEDIA QUERIES ── */
     @media (max-width: 860px) {
       .main-wrap {
@@ -962,6 +1337,13 @@
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(-6px); }
         to { opacity: 1; transform: translateY(0); }
+      }
+      .calc-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .calc-section {
+        padding: 18px 14px;
       }
     }
 
@@ -1140,6 +1522,24 @@
       .floating-wa-btn:active {
         transform: scale(0.92);
       }
+
+      /* Calculadora Responsive Mobile */
+      .calc-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .calc-header-actions {
+        display: flex;
+        justify-content: flex-end;
+      }
+      .calc-kpis-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .calc-lot-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
     }
   </style>
 </head>
@@ -1225,6 +1625,201 @@
       </div>
     </div>
   </div>
+
+  <!-- CALCULADORA DE COSTOS Y RENTABILIDAD (SOLO MODO VENDEDOR / ADMIN) -->
+  <section id="sellerCalculatorSection" class="calc-section hidden">
+    <div class="calc-container">
+      <div class="calc-header">
+        <div class="calc-title-group">
+          <div class="calc-badge">⚡ PANEL PRIVADO VENDEDOR</div>
+          <h2>📊 Calculadora de Costos y Rentabilidad</h2>
+          <p class="calc-subtitle">Cálculo dinámico en USD: costo real, precio final, margen FOB, ganancia RoRo y proyección por volumen.</p>
+        </div>
+        <div class="calc-header-actions">
+          <button type="button" class="calc-btn-action" onclick="resetCalculator()" title="Restablecer valores por defecto">
+            🔄 Valores por Defecto
+          </button>
+        </div>
+      </div>
+
+      <div class="calc-grid">
+        <!-- COLUMNA 1: ENTRADAS / CAMPOS EDITABLES -->
+        <div class="calc-card calc-inputs-col">
+          <div class="calc-card-title">
+            <span>⚙️ Parámetros de Operación</span>
+            <span class="calc-card-tag">Editables (USD)</span>
+          </div>
+
+          <div class="calc-inputs-block">
+            <h4 class="calc-block-header">1. Costos Reales</h4>
+            
+            <div class="calc-input-group">
+              <label for="calcFobReal">
+                <span>FOB Real del Vehículo</span>
+                <span style="color:var(--muted);font-size:0.68rem;">(Costo neto Corea)</span>
+              </label>
+              <div class="calc-input-wrap">
+                <span class="calc-curr">USD</span>
+                <input type="number" id="calcFobReal" class="calc-input" value="3050" min="0" step="50" oninput="updateCalculator()">
+              </div>
+            </div>
+
+            <div class="calc-input-group">
+              <label for="calcRoroReal">
+                <span>Costo Real del RoRo</span>
+                <span style="color:var(--muted);font-size:0.68rem;">(Flete neto marítimo)</span>
+              </label>
+              <div class="calc-input-wrap">
+                <span class="calc-curr">USD</span>
+                <input type="number" id="calcRoroReal" class="calc-input" value="1705" min="0" step="10" oninput="updateCalculator()">
+              </div>
+            </div>
+
+            <div class="calc-input-group">
+              <label for="calcOtrosCostos">
+                <span>Otros Costos</span>
+                <span style="color:var(--muted);font-size:0.68rem;">(Gestión / Extras netos)</span>
+              </label>
+              <div class="calc-input-wrap">
+                <span class="calc-curr">USD</span>
+                <input type="number" id="calcOtrosCostos" class="calc-input" value="0" min="0" step="10" oninput="updateCalculator()">
+              </div>
+            </div>
+          </div>
+
+          <div class="calc-inputs-block">
+            <h4 class="calc-block-header">2. Valores Comerciales (Oferta Cliente)</h4>
+
+            <div class="calc-input-group">
+              <label for="calcGananciaFob">
+                <span>Ganancia Agregada al FOB</span>
+                <span style="color:var(--muted);font-size:0.68rem;">(Margen sobre el auto)</span>
+              </label>
+              <div class="calc-input-wrap">
+                <span class="calc-curr">USD</span>
+                <input type="number" id="calcGananciaFob" class="calc-input" value="650" min="0" step="50" oninput="updateCalculator()">
+              </div>
+            </div>
+
+            <div class="calc-input-group">
+              <label for="calcRoroCobrado">
+                <span>RoRo Cobrado al Cliente</span>
+                <span style="color:var(--muted);font-size:0.68rem;">(Flete cotizado a cliente)</span>
+              </label>
+              <div class="calc-input-wrap">
+                <span class="calc-curr">USD</span>
+                <input type="number" id="calcRoroCobrado" class="calc-input" value="2200" min="0" step="50" oninput="updateCalculator()">
+              </div>
+            </div>
+          </div>
+
+          <div class="calc-inputs-block">
+            <h4 class="calc-block-header">3. Volumen / Proyección</h4>
+            <div class="calc-input-group">
+              <label for="calcCantidad">Cantidad de Vehículos</label>
+              <div class="calc-qty-control">
+                <div class="calc-input-wrap" style="flex:1;min-width:70px;">
+                  <input type="number" id="calcCantidad" class="calc-input" value="1" min="1" max="100" step="1" oninput="updateCalculator()">
+                </div>
+                <div class="calc-qty-presets">
+                  <button type="button" class="btn-qty active" onclick="setCalcQty(1)">1</button>
+                  <button type="button" class="btn-qty" onclick="setCalcQty(2)">2</button>
+                  <button type="button" class="btn-qty" onclick="setCalcQty(3)">3</button>
+                  <button type="button" class="btn-qty" onclick="setCalcQty(5)">5</button>
+                  <button type="button" class="btn-qty" onclick="setCalcQty(10)">10</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUMNA 2: RESULTADOS Y DESGLOSE EN TIEMPO REAL -->
+        <div class="calc-card calc-results-col">
+          <div class="calc-card-title">
+            <span>📈 Rentabilidad y Márgenes</span>
+            <span class="calc-card-tag gold">Tiempo Real</span>
+          </div>
+
+          <!-- AVISOS / VALIDACIONES -->
+          <div id="calcAlertRoro" class="calc-alert warning hidden">
+            ⚠️ <strong>Atención:</strong> El RoRo cobrado está por debajo de su costo real (pérdida en flete).
+          </div>
+          <div id="calcAlertLoss" class="calc-alert danger hidden">
+            🚨 <strong>Alerta de Margen:</strong> Esta operación genera pérdida neta.
+          </div>
+
+          <!-- KPIS UNITARIOS -->
+          <div class="calc-kpis-grid">
+            <div class="calc-kpi-card highlight-final">
+              <div class="calc-kpi-label">Precio Final Cliente</div>
+              <div class="calc-kpi-val red" id="dispPrecioFinal">USD 5.900</div>
+              <div class="calc-kpi-sub" id="dispFobClienteBreakdown">FOB: USD 3.700 + RoRo: USD 2.200</div>
+            </div>
+
+            <div class="calc-kpi-card">
+              <div class="calc-kpi-label">Costo Real Total</div>
+              <div class="calc-kpi-val" id="dispCostoReal">USD 4.755</div>
+              <div class="calc-kpi-sub" id="dispCostoRealSub">FOB: USD 3.050 + RoRo: USD 1.705</div>
+            </div>
+
+            <div class="calc-kpi-card profit-card">
+              <div class="calc-kpi-label">Ganancia Total x Unidad</div>
+              <div class="calc-kpi-val green" id="dispGananciaTotalUnit">USD 1.145</div>
+              <div class="calc-kpi-sub" id="dispMargenUnitPct">Margen: 19.4% sobre venta</div>
+            </div>
+          </div>
+
+          <!-- DESGLOSE DETALLADO DE GANANCIA -->
+          <div class="calc-breakdown-box">
+            <div class="calc-breakdown-title">Desglose de Ganancia por Unidad</div>
+            
+            <div class="calc-breakdown-row">
+              <span class="b-name">Ganancia sobre FOB (Margen vehículo):</span>
+              <strong class="b-val green" id="dispGananciaFob">+USD 650</strong>
+            </div>
+            
+            <div class="calc-breakdown-row">
+              <span class="b-name">Ganancia generada por RoRo (Flete):</span>
+              <strong class="b-val green" id="dispGananciaRoro">+USD 495</strong>
+            </div>
+
+            <div class="calc-breakdown-divider"></div>
+
+            <div class="calc-breakdown-row calc-breakdown-total">
+              <span class="b-name">Ganancia Neta Total Unit.:</span>
+              <strong class="b-val green" id="dispGananciaSuma">USD 1.145</strong>
+            </div>
+          </div>
+
+          <!-- PROYECCIÓN POR LOTE / MULTI-VEHÍCULOS -->
+          <div class="calc-lot-box" id="calcLotBox">
+            <div class="calc-lot-header">
+              <div class="calc-lot-title">
+                📦 Proyección para <span id="dispLotQtyLabel" style="color:var(--gold);">1</span> Vehículo(s)
+              </div>
+              <span class="calc-lot-tag" id="dispLotTag">Lote Comercial</span>
+            </div>
+
+            <div class="calc-lot-grid">
+              <div class="calc-lot-item">
+                <span class="l-lbl">Facturación Total</span>
+                <span class="l-val" id="dispLotFacturacion">USD 5.900</span>
+              </div>
+              <div class="calc-lot-item">
+                <span class="l-lbl">Costo Real Total</span>
+                <span class="l-val" id="dispLotCosto">USD 4.755</span>
+              </div>
+              <div class="calc-lot-item highlight-lot">
+                <span class="l-lbl">Ganancia Total Lote</span>
+                <span class="l-val green" id="dispLotGanancia">USD 1.145</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- MAIN -->
   <div class="main-wrap">
@@ -1470,6 +2065,7 @@
         authState.mode = 'client';
       }
       renderAuthNav();
+      updateSellerCalculatorVisibility();
     }
 
     function renderAuthNav() {
@@ -1488,6 +2084,7 @@
             <button class="mode-btn ${isClient ? 'active' : ''}" onclick="setMode('client')">👤 Vista Cliente</button>
             <button class="mode-btn ${!isClient ? 'active admin-on' : ''}" onclick="setMode('admin')">⚡ Modo Vendedor (${uInfo?.nombre || authState.user})</button>
           </div>
+          ${!isClient ? '<button class="btn-auth-trigger" style="border-color:rgba(232,193,117,0.5);color:var(--gold);" onclick="scrollToCalculator()" title="Ir a la Calculadora">📊 Calculadora</button>' : ''}
           <button class="btn-logout-head" onclick="logoutSeller()" title="Cerrar sesión">Salir</button>
           <a class="nav-back" href="https://www.mdm.com.py/#importacion-vehiculos">← Volver</a>
         `;
@@ -1498,6 +2095,7 @@
       authState.mode = m;
       sessionStorage.setItem('mdm_seller_mode', m);
       renderAuthNav();
+      updateSellerCalculatorVisibility();
       loadVehicles();
     }
 
@@ -1525,6 +2123,7 @@
       authState.mode = 'admin';
       closeLoginModal();
       renderAuthNav();
+      updateSellerCalculatorVisibility();
       loadVehicles();
     }
 
@@ -1535,6 +2134,7 @@
       authState.user = null;
       authState.mode = 'client';
       renderAuthNav();
+      updateSellerCalculatorVisibility();
       loadVehicles();
     }
 
@@ -1545,6 +2145,176 @@
     function closeLoginModal() {
       document.getElementById('loginModal').classList.add('hidden');
       document.getElementById('loginError').textContent = '';
+    }
+
+    // ── CALCULADORA DE COSTOS Y RENTABILIDAD (MODO VENDEDOR) ──
+    function updateSellerCalculatorVisibility() {
+      const calcSection = document.getElementById('sellerCalculatorSection');
+      if (!calcSection) return;
+      const isSellerAdmin = authState.isLoggedIn && authState.mode === 'admin';
+      if (isSellerAdmin) {
+        calcSection.classList.remove('hidden');
+        updateCalculator();
+      } else {
+        calcSection.classList.add('hidden');
+      }
+    }
+
+    function fmtUSDVal(n, prefix = '') {
+      const num = Math.round(Number(n) || 0);
+      const formatted = Math.abs(num).toLocaleString('es-PY');
+      if (num < 0) return `-USD ${formatted}`;
+      return `${prefix}USD ${formatted}`;
+    }
+
+    function updateCalculator() {
+      const fobReal = Math.max(0, parseFloat(document.getElementById('calcFobReal')?.value) || 0);
+      const roroReal = Math.max(0, parseFloat(document.getElementById('calcRoroReal')?.value) || 0);
+      const otrosCostos = Math.max(0, parseFloat(document.getElementById('calcOtrosCostos')?.value) || 0);
+      
+      const gananciaFob = Math.max(0, parseFloat(document.getElementById('calcGananciaFob')?.value) || 0);
+      const roroCobrado = Math.max(0, parseFloat(document.getElementById('calcRoroCobrado')?.value) || 0);
+      const qty = Math.max(1, parseInt(document.getElementById('calcCantidad')?.value, 10) || 1);
+
+      // Fórmulas
+      const costoRealTotal = fobReal + roroReal + otrosCostos;
+      const precioFinal = fobReal + gananciaFob + roroCobrado + otrosCostos;
+      const fobCliente = fobReal + gananciaFob;
+      
+      const gananciaFobVal = gananciaFob;
+      const gananciaRoro = roroCobrado - roroReal;
+      const gananciaTotalUnit = gananciaFobVal + gananciaRoro; // = precioFinal - costoRealTotal
+      
+      const margenPct = precioFinal > 0 ? ((gananciaTotalUnit / precioFinal) * 100).toFixed(1) : '0.0';
+
+      // Proyección por cantidad
+      const facturacionLote = precioFinal * qty;
+      const costoLote = costoRealTotal * qty;
+      const gananciaLote = gananciaTotalUnit * qty;
+
+      // Actualizar DOM Unitario
+      const elPrecioFinal = document.getElementById('dispPrecioFinal');
+      if (elPrecioFinal) elPrecioFinal.textContent = fmtUSDVal(precioFinal);
+
+      const elFobClienteBreakdown = document.getElementById('dispFobClienteBreakdown');
+      if (elFobClienteBreakdown) {
+        elFobClienteBreakdown.textContent = `FOB: ${fmtUSDVal(fobCliente)} + RoRo: ${fmtUSDVal(roroCobrado)}${otrosCostos > 0 ? ` + Otros: ${fmtUSDVal(otrosCostos)}` : ''}`;
+      }
+
+      const elCostoReal = document.getElementById('dispCostoReal');
+      if (elCostoReal) elCostoReal.textContent = fmtUSDVal(costoRealTotal);
+
+      const elCostoRealSub = document.getElementById('dispCostoRealSub');
+      if (elCostoRealSub) {
+        elCostoRealSub.textContent = `FOB: ${fmtUSDVal(fobReal)} + RoRo: ${fmtUSDVal(roroReal)}${otrosCostos > 0 ? ` + Otros: ${fmtUSDVal(otrosCostos)}` : ''}`;
+      }
+
+      const elGananciaUnit = document.getElementById('dispGananciaTotalUnit');
+      if (elGananciaUnit) {
+        elGananciaUnit.textContent = fmtUSDVal(gananciaTotalUnit);
+        elGananciaUnit.className = `calc-kpi-val ${gananciaTotalUnit >= 0 ? 'green' : 'red'}`;
+      }
+
+      const elMargenUnitPct = document.getElementById('dispMargenUnitPct');
+      if (elMargenUnitPct) {
+        elMargenUnitPct.textContent = `Margen: ${margenPct}% sobre venta`;
+        elMargenUnitPct.style.color = gananciaTotalUnit >= 0 ? 'var(--muted)' : '#f87171';
+      }
+
+      const elGananciaFob = document.getElementById('dispGananciaFob');
+      if (elGananciaFob) elGananciaFob.textContent = `+${fmtUSDVal(gananciaFobVal)}`;
+
+      const elGananciaRoro = document.getElementById('dispGananciaRoro');
+      if (elGananciaRoro) {
+        elGananciaRoro.textContent = gananciaRoro >= 0 ? `+${fmtUSDVal(gananciaRoro)}` : fmtUSDVal(gananciaRoro);
+        elGananciaRoro.className = `b-val ${gananciaRoro >= 0 ? 'green' : 'red'}`;
+      }
+
+      const elGananciaSuma = document.getElementById('dispGananciaSuma');
+      if (elGananciaSuma) {
+        elGananciaSuma.textContent = fmtUSDVal(gananciaTotalUnit);
+        elGananciaSuma.className = `b-val ${gananciaTotalUnit >= 0 ? 'green' : 'red'}`;
+      }
+
+      // Actualizar DOM Lote
+      const elLotQtyLabel = document.getElementById('dispLotQtyLabel');
+      if (elLotQtyLabel) elLotQtyLabel.textContent = qty;
+
+      const elLotFacturacion = document.getElementById('dispLotFacturacion');
+      if (elLotFacturacion) elLotFacturacion.textContent = fmtUSDVal(facturacionLote);
+
+      const elLotCosto = document.getElementById('dispLotCosto');
+      if (elLotCosto) elLotCosto.textContent = fmtUSDVal(costoLote);
+
+      const elLotGanancia = document.getElementById('dispLotGanancia');
+      if (elLotGanancia) {
+        elLotGanancia.textContent = fmtUSDVal(gananciaLote);
+        elLotGanancia.className = `l-val ${gananciaLote >= 0 ? 'green' : 'red'}`;
+      }
+
+      // Avisos de Validación
+      const alertRoro = document.getElementById('calcAlertRoro');
+      if (alertRoro) {
+        if (roroCobrado < roroReal) alertRoro.classList.remove('hidden');
+        else alertRoro.classList.add('hidden');
+      }
+
+      const alertLoss = document.getElementById('calcAlertLoss');
+      if (alertLoss) {
+        if (gananciaTotalUnit < 0) alertLoss.classList.remove('hidden');
+        else alertLoss.classList.add('hidden');
+      }
+
+      // Estilo de botones de cantidad rápida
+      document.querySelectorAll('.btn-qty').forEach(btn => {
+        const bVal = parseInt(btn.textContent, 10);
+        if (bVal === qty) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+    }
+
+    function setCalcQty(n) {
+      const inp = document.getElementById('calcCantidad');
+      if (inp) {
+        inp.value = n;
+        updateCalculator();
+      }
+    }
+
+    function resetCalculator() {
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      };
+      setVal('calcFobReal', 3050);
+      setVal('calcRoroReal', 1705);
+      setVal('calcOtrosCostos', 0);
+      setVal('calcGananciaFob', 650);
+      setVal('calcRoroCobrado', 2200);
+      setVal('calcCantidad', 1);
+      updateCalculator();
+    }
+
+    function scrollToCalculator() {
+      const calcSection = document.getElementById('sellerCalculatorSection');
+      if (calcSection) {
+        calcSection.classList.remove('hidden');
+        calcSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function loadVehicleInCalc(rawPrice) {
+      if (rawPrice && rawPrice > 0) {
+        const el = document.getElementById('calcFobReal');
+        if (el) el.value = Math.round(rawPrice);
+      }
+      const calcSection = document.getElementById('sellerCalculatorSection');
+      if (calcSection) {
+        calcSection.classList.remove('hidden');
+        calcSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        updateCalculator();
+      }
+      closeModal();
     }
 
     // ── MOBILE FILTER TOGGLE & QUICK CHIPS ──
@@ -1791,6 +2561,7 @@
         footerHtml = `
           <div class="v-card-footer" style="gap:6px;">
             ${sourceUrl ? `<a href="${sourceUrl}" target="_blank" rel="noopener" class="btn-src-link" onclick="event.stopPropagation()">🔗 Fuente</a>` : ''}
+            <button type="button" class="btn-src-link" onclick="event.stopPropagation(); loadVehicleInCalc(${pricing.raw});" title="Calcular rentabilidad de esta unidad" style="background:rgba(232,193,117,0.12);color:var(--gold);border-color:rgba(232,193,117,0.4);padding:6px 9px;">📊 Calc</button>
             <a href="https://wa.me/?text=${waQuoteText}" target="_blank" rel="noopener" class="btn-detail" style="background:#22c55e;padding:7px 12px;font-size:0.75rem;" onclick="event.stopPropagation()">💬 Cotizar WA</a>
           </div>
         `;
@@ -1911,9 +2682,10 @@
               <div><span style="color:var(--muted)">Precio FOB Cliente:</span> <strong style="color:var(--red);">${fmtUSD(pricing.fob)}</strong></div>
               <div><span style="color:var(--muted)">Total Est. PY:</span> <strong style="color:var(--gold);">≈ ${fmtUSD(pricing.total)}</strong></div>
             </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              ${sourceUrl ? `<a href="${sourceUrl}" target="_blank" rel="noopener" class="btn-src-link" style="flex:1;text-align:center;justify-content:center;padding:10px;">🔗 Abrir Anuncio en Fuente Original</a>` : ''}
-              <button onclick="copyQuote('${v.id}')" id="btnCopyQuote" class="btn-src-link" style="flex:1;background:var(--soft-ink);color:var(--white);border-color:var(--line);text-align:center;justify-content:center;padding:10px;">📋 Copiar Cotización</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              ${sourceUrl ? `<a href="${sourceUrl}" target="_blank" rel="noopener" class="btn-src-link" style="flex:1;min-width:140px;text-align:center;justify-content:center;padding:10px;">🔗 Anuncio Fuente</a>` : ''}
+              <button onclick="loadVehicleInCalc(${pricing.raw})" class="btn-src-link" style="flex:1;min-width:140px;background:rgba(232,193,117,0.15);color:var(--gold);border-color:var(--gold);text-align:center;justify-content:center;padding:10px;">📊 Cargar en Calculadora</button>
+              <button onclick="copyQuote('${v.id}')" id="btnCopyQuote" class="btn-src-link" style="flex:1;min-width:140px;background:var(--soft-ink);color:var(--white);border-color:var(--line);text-align:center;justify-content:center;padding:10px;">📋 Copiar Cotización</button>
             </div>
           </div>
         `;
