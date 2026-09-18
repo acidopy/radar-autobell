@@ -74,7 +74,7 @@ _img_cache: dict = {}
 @app.get("/api/img")
 async def proxy_image(url: str = Query(...), v: Optional[str] = Query(None)):
     """Fetch an Autobell vehicle photo, blur supplier logos, and return the result."""
-    cache_key = f"{url}_{v or 'v4'}"
+    cache_key = f"{url}_{v or 'v5'}"
     if cache_key in _img_cache:
         return Response(content=_img_cache[cache_key], media_type="image/jpeg",
                         headers={"Cache-Control": "public, max-age=3600, must-revalidate"})
