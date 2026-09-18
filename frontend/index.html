@@ -674,6 +674,99 @@
     .site-footer a { color: var(--red); }
 
     .hidden { display: none !important; }
+
+    /* ── BLUR MASKS sobre zonas de logos Autobell ── */
+    .blur-mask {
+      position: absolute;
+      pointer-events: none;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      background: rgba(7,7,9,0.18);
+      z-index: 2;
+    }
+    /* Watermark esquina superior derecha */
+    .blur-topright {
+      top: 0;
+      right: 0;
+      width: 26%;
+      height: 18%;
+    }
+    /* Banner azul superior Autobell */
+    .blur-topbanner {
+      top: 0;
+      left: 0;
+      width: 74%;
+      height: 14%;
+    }
+
+    /* ── FOB HERO ── */
+    .fob-hero {
+      background: rgba(229,9,20,0.08);
+      border: 1px solid rgba(229,9,20,0.25);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-top: 6px;
+    }
+    .fob-hero-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .fob-badge {
+      background: var(--red);
+      color: var(--white);
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      padding: 2px 7px;
+      border-radius: 999px;
+      text-transform: uppercase;
+    }
+    .fob-origin {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .fob-amount {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--red);
+      line-height: 1;
+    }
+
+    /* ── DESGLOSE COSTOS ── */
+    .cost-breakdown {
+      background: var(--soft-ink);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 0.75rem;
+    }
+    .cost-row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+    }
+    .cost-row span:last-child { font-weight: 600; color: var(--white); }
+    .cost-divider-line {
+      height: 1px;
+      background: var(--line);
+      margin: 3px 0;
+    }
+    .cost-total {
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .cost-total span:last-child { color: var(--gold); }
+    .cost-note {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 2px;
+      opacity: 0.7;
+    }
   </style>
 </head>
 <body>
@@ -883,7 +976,7 @@
   <script>
     // ── CONFIGURACIÓN ──
     // ⚠️ Reemplazar con la URL de Render una vez desplegado
-    const API_BASE = 'RENDER_API_URL_AQUI';
+    const API_BASE = 'https://radar-autobell.onrender.com';
 
     let state = {
       page: 1,
@@ -1003,13 +1096,22 @@
       }
     }
 
+    // ── COSTOS ──
+    const RORO_USD  = 2800;
+    const CIGUENA_USD = 700;
+    function getPricing(v) {
+      const fob = Number(v.price_usd) || 0;
+      return { fob, total: fob ? fob + RORO_USD + CIGUENA_USD : 0 };
+    }
+    function fmtUSD(n) { return n ? `\$${Number(n).toLocaleString('es-PY')} USD` : '—'; }
+
     // ── CARD ──
     function buildCard(v) {
       const card = document.createElement('div');
       card.className = 'v-card';
       card.onclick = () => openDetail(v);
 
-      const price = v.price_usd ? `\$${Number(v.price_usd).toLocaleString('es-PY')}` : 'S/P';
+      const pricing = getPricing(v);
       const year = v.year || '—';
       const km = v.mileage_km ? `${Number(v.mileage_km).toLocaleString('es-PY')} km` : '—';
       const fuel = v.fuel || '';
@@ -1022,7 +1124,7 @@
       card.innerHTML = `
         <div class="v-card-img">
           ${photo
-            ? `<img src="${photo}" alt="${v.name || ''}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\"no-photo\\">🚙</div>'">`
+            ? `<img src="${API_BASE}/api/img?url=${encodeURIComponent(photo)}" alt="${v.name || ''}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\"no-photo\\">🚙</div>'">`
             : '<div class="no-photo">🚙</div>'
           }
           ${isOpp ? '<span class="badge-opp">⭐ Oportunidad</span>' : ''}
@@ -1030,7 +1132,6 @@
         </div>
         <div class="v-card-body">
           <div class="v-name">${v.name || `${v.make || ''} ${v.model || ''} ${year}`}</div>
-          <div class="v-price">${price}</div>
           <div class="v-specs">
             ${year !== '—' ? `<span class="spec-pill">${year}</span>` : ''}
             ${km !== '—' ? `<span class="spec-pill">${km}</span>` : ''}
@@ -1039,10 +1140,26 @@
             ${drive ? `<span class="spec-pill ${drive==='4WD'?'highlight':''}">${drive}</span>` : ''}
             ${v.sunroof ? '<span class="spec-pill highlight">☀️ Techo</span>' : ''}
           </div>
+
+          <div class="fob-hero">
+            <div class="fob-hero-header">
+              <span class="fob-badge">PRECIO FOB</span>
+              <span class="fob-origin">🇰🇷 Puerto Corea</span>
+            </div>
+            <div class="fob-amount">${pricing.fob ? fmtUSD(pricing.fob) : 'A consultar'}</div>
+          </div>
+
+          <div class="cost-breakdown">
+            <div class="cost-row"><span>+ RORO (flete marítimo)</span><span>USD ${RORO_USD.toLocaleString('es-PY')}</span></div>
+            <div class="cost-row"><span>+ Cigüeña (Paraguay)</span><span>≈ USD ${CIGUENA_USD.toLocaleString('es-PY')}</span></div>
+            <div class="cost-divider-line"></div>
+            <div class="cost-row cost-total"><span>Total estimado llegada:</span><span>${pricing.total ? `≈ ${fmtUSD(pricing.total)}` : '—'}</span></div>
+            <div class="cost-note">* Cigüeña: valor aprox., se abona en Paraguay</div>
+          </div>
         </div>
         <div class="v-card-footer">
           <span class="v-seller">${v.seller || 'Autobell Global'}</span>
-          <span class="btn-detail">Ver detalle →</span>
+          <a href="https://wa.me/595981174316?text=Hola%20MDM%2C%20me%20interesa%20importar%20este%20SUV%3A%20${encodeURIComponent((v.name||v.model||'')+'%20FOB%20'+fmtUSD(pricing.fob))}" target="_blank" rel="noopener" class="btn-detail" onclick="event.stopPropagation()">💬 Consultar</a>
         </div>
       `;
       return card;

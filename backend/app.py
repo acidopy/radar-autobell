@@ -5,9 +5,10 @@ from typing import Optional, List, Dict, Any
 
 from fastapi import FastAPI, Query, HTTPException, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import httpx
 
 from backend.database import (
     init_db, query_vehicles, get_vehicle_by_id,
@@ -62,6 +63,35 @@ class ConnectAuthRequest(BaseModel):
     token: str
     user_key: Optional[str] = ""
     member_code: Optional[str] = ""
+
+
+# ── Image proxy with logo sanitization ──────────────────────────────────────
+_img_cache: dict = {}
+
+@app.get("/api/img")
+async def proxy_image(url: str = Query(...)):
+    """Fetch an Autobell vehicle photo, blur supplier logos, and return the result."""
+    if url in _img_cache:
+        return Response(content=_img_cache[url], media_type="image/jpeg",
+                        headers={"Cache-Control": "public, max-age=86400"})
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(url, headers={"Referer": "https://www.autobellglobal.com/"})
+        if r.status_code != 200:
+            raise HTTPException(status_code=502, detail="upstream error")
+        content = r.content
+        try:
+            from backend.image_sanitizer import sanitize_image
+            content = sanitize_image(content)
+        except Exception:
+            pass  # Si OpenCV no está disponible, servir imagen original
+        if len(_img_cache) < 500:
+            _img_cache[url] = content
+        return Response(content=content, media_type="image/jpeg",
+                        headers={"Cache-Control": "public, max-age=86400"})
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+# ─────────────────────────────────────────────────────────────────────────────
 
 @app.get("/api/auth/status")
 def get_auth_status():
