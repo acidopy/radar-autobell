@@ -1216,7 +1216,19 @@
       const pricing = getPricing(v);
       const km = v.mileage_km ? `${Number(v.mileage_km).toLocaleString('es-PY')} km` : '—';
       
-      const photos = (v.photos && v.photos.length > 0) ? v.photos : (v.photo || v.thumbnail_url ? [v.photo || v.thumbnail_url] : []);
+      const rawPhotos = (v.photos && v.photos.length > 0) ? v.photos : (v.photo || v.thumbnail_url ? [v.photo || v.thumbnail_url] : []);
+      const seenHashes = new Set();
+      const photos = [];
+      rawPhotos.forEach(p => {
+        if (!p) return;
+        const pLarge = p.replace(/_(medium|small|thumb)\./i, '_large.');
+        const match = pLarge.match(/([a-f0-9]{20,})/i);
+        const key = match ? match[1].toLowerCase() : pLarge.toLowerCase();
+        if (!seenHashes.has(key)) {
+          seenHashes.add(key);
+          photos.push(pLarge);
+        }
+      });
       const mainPhoto = photos[0] || '';
 
       const thumbsHtml = photos.length > 1 ? `

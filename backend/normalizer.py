@@ -134,32 +134,38 @@ def normalize_vehicle(raw: Dict[str, Any]) -> Dict[str, Any]:
     else:
         status = "ACTIVE"
 
-    # Photos
+    # Photos (deduplicated, full-resolution only)
     photos: List[str] = []
-    # From thumbnailResource
+    seen_hashes = set()
+
+    def _add_photo(rel_or_url: Optional[str]):
+        if not rel_or_url:
+            return
+        full_url = rel_or_url if rel_or_url.startswith("http") else f"{AUTOBELL_IMAGE_BASE}/{rel_or_url.lstrip('/')}"
+        # Normalize to large resolution
+        full_url = full_url.replace("_small.", "_large.").replace("_medium.", "_large.").replace("_thumb.", "_large.")
+        # Extract filename hash
+        import re
+        m = re.search(r"([a-f0-9]{20,})", full_url, re.I)
+        h = m.group(1).lower() if m else full_url.lower()
+        if h not in seen_hashes:
+            seen_hashes.add(h)
+            photos.append(full_url)
+
+    # From thumbnailResource & thumbnailResource2 (take ONLY the largest available)
     for res_key in ["thumbnailResource", "thumbnailResource2"]:
         thumb_obj = raw.get(res_key)
         if isinstance(thumb_obj, dict):
-            # prefer LARGE, then MEDIUM, then THUMB
-            for size_key in ["LARGE", "MEDIUM", "THUMB"]:
-                rel_path = thumb_obj.get(size_key)
-                if rel_path:
-                    img_url = rel_path if rel_path.startswith("http") else f"{AUTOBELL_IMAGE_BASE}/{rel_path.lstrip('/')}"
-                    if img_url not in photos:
-                        photos.append(img_url)
+            rel_path = thumb_obj.get("LARGE") or thumb_obj.get("MEDIUM") or thumb_obj.get("THUMB")
+            _add_photo(rel_path)
 
     # From car_detail_images if present
     for img_item in raw.get("detail_images", []):
         if isinstance(img_item, dict):
-            rel = img_item.get("resource") or img_item.get("thumbnailResource", {}).get("LARGE")
-            if rel:
-                img_url = rel if rel.startswith("http") else f"{AUTOBELL_IMAGE_BASE}/{rel.lstrip('/')}"
-                if img_url not in photos:
-                    photos.append(img_url)
+            rel = img_item.get("resource") or img_item.get("thumbnailResource", {}).get("LARGE") or img_item.get("thumbnailResource", {}).get("MEDIUM")
+            _add_photo(rel)
         elif isinstance(img_item, str):
-            img_url = img_item if img_item.startswith("http") else f"{AUTOBELL_IMAGE_BASE}/{img_item.lstrip('/')}"
-            if img_url not in photos:
-                photos.append(img_url)
+            _add_photo(img_item)
 
     thumbnail_url = photos[0] if photos else ""
 
