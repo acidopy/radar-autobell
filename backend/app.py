@@ -19,11 +19,14 @@ from backend.database import (
 )
 from backend.connector import AutobellConnector
 from backend.scheduler import (
-    run_full_scan, start_scan_in_background, CURRENT_SCAN_STATE
+    run_full_scan, start_scan_in_background, start_auto_scheduler, CURRENT_SCAN_STATE
 )
 
 # Initialize database
 init_db()
+
+# Start background auto-scheduler (initial scan if empty + periodic updates)
+start_auto_scheduler(interval_minutes=60)
 
 app = FastAPI(
     title="RADAR AUTOBELL API",

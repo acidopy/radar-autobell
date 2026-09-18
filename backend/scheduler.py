@@ -150,8 +150,37 @@ def run_full_scan(max_per_model: int = 1500, fetch_detail_photos: bool = False) 
         with SCAN_LOCK:
             CURRENT_SCAN_STATE["is_scanning"] = False
 
-def start_scan_in_background(max_per_model: int = 60, fetch_detail_photos: bool = False):
+def start_scan_in_background(max_per_model: int = 2000, fetch_detail_photos: bool = False):
     """Launches scan in background thread."""
     t = threading.Thread(target=run_full_scan, kwargs={"max_per_model": max_per_model, "fetch_detail_photos": fetch_detail_photos}, daemon=True)
     t.start()
     return {"status": "STARTED"}
+
+def start_auto_scheduler(interval_minutes: int = 60):
+    """
+    Starts an automatic background loop that scans vehicles on startup
+    and refreshes the catalog periodically every interval_minutes.
+    """
+    def _loop():
+        import time
+        from backend.database import get_dashboard_stats
+        time.sleep(3)
+        try:
+            stats = get_dashboard_stats()
+            # If database is empty or has few items, scan immediately
+            if stats.get("total_active", 0) < 500:
+                logger.info("Auto-scheduler: Starting initial full scan on startup...")
+                run_full_scan(max_per_model=2000)
+        except Exception as e:
+            logger.error(f"Auto-scheduler initial scan error: {e}")
+
+        while True:
+            time.sleep(interval_minutes * 60)
+            try:
+                logger.info("Auto-scheduler: Starting periodic catalog update...")
+                run_full_scan(max_per_model=2000)
+            except Exception as e:
+                logger.error(f"Auto-scheduler periodic scan error: {e}")
+
+    t = threading.Thread(target=_loop, daemon=True, name="auto_scheduler_thread")
+    t.start()
