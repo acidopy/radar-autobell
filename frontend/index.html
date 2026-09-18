@@ -86,6 +86,98 @@
       color: var(--red);
     }
 
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-auth-trigger {
+      background: var(--soft-ink);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-auth-trigger:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    /* ── MODE SWITCHER (CLIENTE vs VENDEDOR) ── */
+    .mode-toggle-wrap {
+      display: inline-flex;
+      background: var(--soft-ink);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .mode-btn {
+      background: none;
+      border: none;
+      border-radius: 999px;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .mode-btn.active {
+      background: var(--red);
+      color: var(--white);
+    }
+    .mode-btn.active.admin-on {
+      background: var(--gold);
+      color: #000;
+    }
+
+    .btn-logout-head {
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.7rem;
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-logout-head:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .btn-src-link {
+      background: var(--soft-ink);
+      border: 1px solid rgba(232,193,117,0.4);
+      border-radius: var(--radius-sm);
+      color: var(--gold);
+      font-family: inherit;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 6px 10px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .btn-src-link:hover {
+      background: rgba(232,193,117,0.15);
+      border-color: var(--gold);
+    }
+
     .nav-back {
       font-size: 0.82rem;
       color: var(--muted);
@@ -807,11 +899,38 @@
         <div class="nav-divider"></div>
         <span class="nav-section-label">🚙 Buscador SUV</span>
       </div>
-      <a class="nav-back" href="https://www.mdm.com.py/#importacion-vehiculos">
-        ← Volver a MDM
-      </a>
+      <div class="nav-right" id="navAuthArea">
+        <!-- Generado dinámicamente: botón login o switcher cliente/vendedor -->
+      </div>
     </nav>
   </header>
+
+  <!-- MODAL LOGIN VENDEDORES / ADMIN -->
+  <div id="loginModal" class="modal-bg hidden">
+    <div class="modal-box" style="max-width:380px;">
+      <div class="modal-head">
+        <h3>🔐 Acceso Equipo MDM</h3>
+        <button class="btn-close" onclick="closeLoginModal()">×</button>
+      </div>
+      <div style="padding:24px;">
+        <p style="font-size:0.8rem;color:var(--muted);margin-bottom:18px;line-height:1.5;">
+          Ingresá con tu usuario y código para activar el <strong>Modo Vendedor</strong> (precios de origen, desglose y enlaces fuente).
+        </p>
+        <div style="text-align:left;margin-bottom:12px;">
+          <label style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:4px;">Usuario</label>
+          <input type="text" id="loginUser" class="input-ctrl" placeholder="ej: samuel" autocomplete="username">
+        </div>
+        <div style="text-align:left;margin-bottom:18px;">
+          <label style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:4px;">Código de acceso</label>
+          <input type="password" id="loginPass" class="input-ctrl" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button style="width:100%;padding:12px;font-weight:700;background:var(--red);border:none;border-radius:var(--radius-sm);color:#fff;cursor:pointer;font-family:inherit;font-size:0.88rem;" onclick="submitLogin()">
+          Ingresar al Modo Vendedor →
+        </button>
+        <div id="loginError" style="color:#ff6b6b;font-size:0.78rem;margin-top:10px;text-align:center;"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- HERO -->
   <section class="hero">
@@ -1001,8 +1120,22 @@
 
   <script>
     // ── CONFIGURACIÓN ──
-    // ⚠️ Reemplazar con la URL de Render una vez desplegado
     const API_BASE = 'https://radar-autobell.onrender.com';
+
+    // ── USUARIOS VENDEDORES / ADMIN ──
+    const USERS = {
+      'samuel': {
+        hash: '4b5dfec171fb185a4b8f7a109337cb19fe456d9d998c054e54b59b2e15708b43',
+        nombre: 'Samuel',
+        rol: 'Vendedor'
+      }
+    };
+
+    let authState = {
+      isLoggedIn: false,
+      user: null,
+      mode: 'client' // 'client' | 'admin'
+    };
 
     let state = {
       page: 1,
@@ -1013,12 +1146,124 @@
       scanTimer: null
     };
 
+    // ── COSTOS BASE ──
+    const FOP_USD     = 800;   // Margen de ganancia cargado al FOB
+    const RORO_USD    = 2800;  // Flete marítimo
+    const CIGUENA_USD = 700;   // Transporte local PY
+
+    function getPricing(v) {
+      const raw = Number(v.price_usd) || 0;
+      const fob = raw ? raw + FOP_USD : 0;
+      return {
+        raw,
+        fop: FOP_USD,
+        fob,
+        roro: RORO_USD,
+        ciguena: CIGUENA_USD,
+        total: fob ? fob + RORO_USD + CIGUENA_USD : 0
+      };
+    }
+
+    function fmtUSD(n) { return n ? `\$${Number(n).toLocaleString('es-PY')} USD` : '—'; }
+
     // ── INIT ──
     document.addEventListener('DOMContentLoaded', () => {
+      initAuth();
       loadStats();
       loadVehicles();
       setupFilters();
     });
+
+    // ── AUTH & MODO VENDEDOR / CLIENTE ──
+    function initAuth() {
+      const savedUser = sessionStorage.getItem('mdm_seller_user');
+      const savedMode = sessionStorage.getItem('mdm_seller_mode') || 'admin';
+      if (savedUser && USERS[savedUser]) {
+        authState.isLoggedIn = true;
+        authState.user = savedUser;
+        authState.mode = savedMode;
+      } else {
+        authState.isLoggedIn = false;
+        authState.user = null;
+        authState.mode = 'client';
+      }
+      renderAuthNav();
+    }
+
+    function renderAuthNav() {
+      const container = document.getElementById('navAuthArea');
+      if (!container) return;
+      if (!authState.isLoggedIn) {
+        container.innerHTML = `
+          <button class="btn-auth-trigger" onclick="openLoginModal()">🔐 Acceso Equipo</button>
+          <a class="nav-back" href="https://www.mdm.com.py/#importacion-vehiculos">← Volver a MDM</a>
+        `;
+      } else {
+        const uInfo = USERS[authState.user];
+        const isClient = authState.mode === 'client';
+        container.innerHTML = `
+          <div class="mode-toggle-wrap">
+            <button class="mode-btn ${isClient ? 'active' : ''}" onclick="setMode('client')">👤 Vista Cliente</button>
+            <button class="mode-btn ${!isClient ? 'active admin-on' : ''}" onclick="setMode('admin')">⚡ Modo Vendedor (${uInfo?.nombre || authState.user})</button>
+          </div>
+          <button class="btn-logout-head" onclick="logoutSeller()" title="Cerrar sesión">Salir</button>
+          <a class="nav-back" href="https://www.mdm.com.py/#importacion-vehiculos">← Volver</a>
+        `;
+      }
+    }
+
+    function setMode(m) {
+      authState.mode = m;
+      sessionStorage.setItem('mdm_seller_mode', m);
+      renderAuthNav();
+      loadVehicles();
+    }
+
+    async function sha256(str) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function submitLogin() {
+      const u = (document.getElementById('loginUser').value || '').trim().toLowerCase();
+      const p = document.getElementById('loginPass').value || '';
+      const err = document.getElementById('loginError');
+      if (!u || !p) { err.textContent = 'Completá tu usuario y código.'; return; }
+      const h = await sha256(p);
+      const userObj = USERS[u];
+      if (!userObj || userObj.hash !== h) {
+        err.textContent = '❌ Usuario o código incorrecto.';
+        return;
+      }
+      err.textContent = '';
+      sessionStorage.setItem('mdm_seller_user', u);
+      sessionStorage.setItem('mdm_seller_mode', 'admin');
+      authState.isLoggedIn = true;
+      authState.user = u;
+      authState.mode = 'admin';
+      closeLoginModal();
+      renderAuthNav();
+      loadVehicles();
+    }
+
+    function logoutSeller() {
+      sessionStorage.removeItem('mdm_seller_user');
+      sessionStorage.removeItem('mdm_seller_mode');
+      authState.isLoggedIn = false;
+      authState.user = null;
+      authState.mode = 'client';
+      renderAuthNav();
+      loadVehicles();
+    }
+
+    function openLoginModal() {
+      document.getElementById('loginModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('loginUser').focus(), 50);
+    }
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.add('hidden');
+      document.getElementById('loginError').textContent = '';
+    }
 
     // ── FILTROS ──
     function setupFilters() {
@@ -1096,6 +1341,7 @@
         loading.classList.add('hidden');
 
         const items = data.items || data;
+        state.items = items;
         const total = data.total || items.length;
         state.totalItems = total;
         state.totalPages = Math.ceil(total / state.pageSize);
@@ -1122,23 +1368,13 @@
       }
     }
 
-    // ── COSTOS ──
-    const FOP_USD     = 800;   // Se suma al FOB (no se muestra por separado)
-    const RORO_USD    = 2800;
-    const CIGUENA_USD = 700;
-    function getPricing(v) {
-      const raw = Number(v.price_usd) || 0;
-      const fob  = raw ? raw + FOP_USD : 0;   // FOB ya incluye FOP
-      return { fob, total: fob ? fob + RORO_USD + CIGUENA_USD : 0 };
-    }
-    function fmtUSD(n) { return n ? `\$${Number(n).toLocaleString('es-PY')} USD` : '—'; }
-
-    // ── CARD ──
+    // ── CARD BUILDER ──
     function buildCard(v) {
       const card = document.createElement('div');
       card.className = 'v-card';
       card.onclick = () => openDetail(v);
 
+      const isAdminMode = authState.isLoggedIn && authState.mode === 'admin';
       const pricing = getPricing(v);
       const year = v.year || '—';
       const km = v.mileage_km ? `${Number(v.mileage_km).toLocaleString('es-PY')} km` : '—';
@@ -1148,27 +1384,53 @@
       const photo = v.photo || (v.photos && v.photos[0]) || v.thumbnail_url || '';
       const isOpp = v.opportunity_flag;
       const isNew = v.is_new_today;
+      const title = v.name || `${v.make || ''} ${v.model || ''} ${year}`;
+      const sourceUrl = v.url || '';
 
-      card.innerHTML = `
-        <div class="v-card-img">
-          ${photo
-            ? `<img src="${API_BASE}/api/img?url=${encodeURIComponent(photo)}" alt="${v.name || ''}" loading="lazy">`
-            : '<div class="no-photo">🚙</div>'
-          }
-          ${isOpp ? '<span class="badge-opp">⭐ Oportunidad</span>' : ''}
-          ${isNew ? '<span class="badge-new">Nuevo</span>' : ''}
-        </div>
-        <div class="v-card-body">
-          <div class="v-name">${v.name || `${v.make || ''} ${v.model || ''} ${year}`}</div>
-          <div class="v-specs">
-            ${year !== '—' ? `<span class="spec-pill">${year}</span>` : ''}
-            ${km !== '—' ? `<span class="spec-pill">${km}</span>` : ''}
-            ${fuel ? `<span class="spec-pill">${fuel}</span>` : ''}
-            ${trans ? `<span class="spec-pill">${trans}</span>` : ''}
-            ${drive ? `<span class="spec-pill ${drive==='4WD'?'highlight':''}">${drive}</span>` : ''}
-            ${v.sunroof ? '<span class="spec-pill highlight">☀️ Techo</span>' : ''}
+      // WhatsApp text for quote
+      const waQuoteText = encodeURIComponent(
+        `*MDM Paraguay - Cotización de Importación*\n` +
+        `🚗 *${title}*\n` +
+        `📅 Año: ${year} | 🛣️ Km: ${km} | ⛽ ${fuel}\n\n` +
+        `💵 *PRECIO FOB (Puerto Corea):* ${fmtUSD(pricing.fob)}\n` +
+        `🚢 *+ Flete RORO:* USD ${RORO_USD.toLocaleString('es-PY')}\n` +
+        `🚛 *+ Cigüeña (PY aprox.):* ≈ USD ${CIGUENA_USD.toLocaleString('es-PY')}\n` +
+        `─────────────────────\n` +
+        `🏁 *TOTAL ESTIMADO LLEGADA:* ≈ ${fmtUSD(pricing.total)}\n\n` +
+        `¿Querés que reservemos o inspeccionemos esta unidad?`
+      );
+
+      let priceHtml = '';
+      if (isAdminMode) {
+        // MODO VENDEDOR / ADMIN
+        priceHtml = `
+          <div class="fob-hero" style="border-color:rgba(232,193,117,0.4);background:rgba(232,193,117,0.06);">
+            <div class="fob-hero-header">
+              <span class="fob-badge" style="background:var(--gold);color:#000;">⚡ VENDEDOR</span>
+              <span class="fob-origin" style="color:var(--gold);">Margen: +USD ${FOP_USD}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:2px;">
+              <div>
+                <span style="font-size:0.68rem;color:var(--muted);display:block;">PRECIO FUENTE</span>
+                <span style="font-size:1.1rem;font-weight:700;color:#93c5fd;">USD ${pricing.raw.toLocaleString('es-PY')}</span>
+              </div>
+              <div style="text-align:right;">
+                <span style="font-size:0.68rem;color:var(--muted);display:block;">FOB CLIENTE</span>
+                <span style="font-size:1.25rem;font-weight:800;color:var(--red);">${pricing.fob ? fmtUSD(pricing.fob) : '—'}</span>
+              </div>
+            </div>
           </div>
 
+          <div class="cost-breakdown" style="border-color:rgba(232,193,117,0.25);">
+            <div class="cost-row"><span>+ RORO (flete marítimo)</span><span>USD ${RORO_USD.toLocaleString('es-PY')}</span></div>
+            <div class="cost-row"><span>+ Cigüeña (Paraguay)</span><span>≈ USD ${CIGUENA_USD.toLocaleString('es-PY')}</span></div>
+            <div class="cost-divider-line"></div>
+            <div class="cost-row cost-total"><span>Total Cliente PY:</span><span>${pricing.total ? `≈ ${fmtUSD(pricing.total)}` : '—'}</span></div>
+          </div>
+        `;
+      } else {
+        // MODO CLIENTE PÚBLICO
+        priceHtml = `
           <div class="fob-hero">
             <div class="fob-hero-header">
               <span class="fob-badge">PRECIO FOB</span>
@@ -1184,11 +1446,49 @@
             <div class="cost-row cost-total"><span>Total estimado llegada:</span><span>${pricing.total ? `≈ ${fmtUSD(pricing.total)}` : '—'}</span></div>
             <div class="cost-note">* Cigüeña: valor aprox., se abona en Paraguay</div>
           </div>
+        `;
+      }
+
+      let footerHtml = '';
+      if (isAdminMode) {
+        footerHtml = `
+          <div class="v-card-footer" style="gap:6px;">
+            ${sourceUrl ? `<a href="${sourceUrl}" target="_blank" rel="noopener" class="btn-src-link" onclick="event.stopPropagation()">🔗 Fuente</a>` : ''}
+            <a href="https://wa.me/?text=${waQuoteText}" target="_blank" rel="noopener" class="btn-detail" style="background:#22c55e;padding:7px 12px;font-size:0.75rem;" onclick="event.stopPropagation()">💬 Cotizar WA</a>
+          </div>
+        `;
+      } else {
+        footerHtml = `
+          <div class="v-card-footer">
+            <span class="v-seller">🇰🇷 Verificado</span>
+            <a href="https://wa.me/595981174316?text=Hola%20MDM%2C%20me%20interesa%20importar%20este%20SUV%3A%20${encodeURIComponent(title+'%20FOB%20'+fmtUSD(pricing.fob))}" target="_blank" rel="noopener" class="btn-detail" onclick="event.stopPropagation()">💬 Consultar</a>
+          </div>
+        `;
+      }
+
+      card.innerHTML = `
+        <div class="v-card-img">
+          ${photo
+            ? `<img src="${API_BASE}/api/img?url=${encodeURIComponent(photo)}" alt="${title}" loading="lazy">`
+            : '<div class="no-photo">🚙</div>'
+          }
+          ${isAdminMode ? '<span class="badge-opp" style="background:var(--gold);color:#000;top:8px;left:8px;bottom:auto;">⚡ VENDEDOR</span>' : ''}
+          ${isOpp ? '<span class="badge-opp">⭐ Oportunidad</span>' : ''}
+          ${isNew ? '<span class="badge-new">Nuevo</span>' : ''}
         </div>
-        <div class="v-card-footer">
-          <span class="v-seller">${v.seller ? '🇰🇷 Verificado' : '🇰🇷 Importador Corea'}</span>
-          <a href="https://wa.me/595981174316?text=Hola%20MDM%2C%20me%20interesa%20importar%20este%20SUV%3A%20${encodeURIComponent((v.name||v.model||'')+'%20FOB%20'+fmtUSD(pricing.fob))}" target="_blank" rel="noopener" class="btn-detail" onclick="event.stopPropagation()">💬 Consultar</a>
+        <div class="v-card-body">
+          <div class="v-name">${title}</div>
+          <div class="v-specs">
+            ${year !== '—' ? `<span class="spec-pill">${year}</span>` : ''}
+            ${km !== '—' ? `<span class="spec-pill">${km}</span>` : ''}
+            ${fuel ? `<span class="spec-pill">${fuel}</span>` : ''}
+            ${trans ? `<span class="spec-pill">${trans}</span>` : ''}
+            ${drive ? `<span class="spec-pill ${drive==='4WD'?'highlight':''}">${drive}</span>` : ''}
+            ${v.sunroof ? '<span class="spec-pill highlight">☀️ Techo</span>' : ''}
+          </div>
+          ${priceHtml}
         </div>
+        ${footerHtml}
       `;
       return card;
     }
@@ -1199,10 +1499,8 @@
       document.getElementById('detailModal').classList.remove('hidden');
       document.body.style.overflow = 'hidden';
 
-      // Render initial with whatever info we have
       renderModal(v);
 
-      // Fetch fresh detail with complete photo gallery
       try {
         const res = await fetch(`${API_BASE}/api/vehicles/${v.id}`);
         if (res.ok) {
@@ -1213,8 +1511,11 @@
     }
 
     function renderModal(v) {
+      const isAdminMode = authState.isLoggedIn && authState.mode === 'admin';
       const pricing = getPricing(v);
       const km = v.mileage_km ? `${Number(v.mileage_km).toLocaleString('es-PY')} km` : '—';
+      const title = v.name || `${v.make || ''} ${v.model || ''} ${v.year || ''}`;
+      const sourceUrl = v.url || '';
       
       const rawPhotos = (v.photos && v.photos.length > 0) ? v.photos : (v.photo || v.thumbnail_url ? [v.photo || v.thumbnail_url] : []);
       const seenHashes = new Set();
@@ -1241,7 +1542,7 @@
         </div>
       ` : '';
 
-      // Clean opportunity text: remove any raw dollar signs or numbers to avoid supplier price leaks
+      // Clean opportunity text
       let oppHtml = '';
       if (v.opportunity_flag) {
         let oppText = (v.opportunity_reason || 'Excelente relación precio/calidad')
@@ -1258,11 +1559,36 @@
         `;
       }
 
+      // Admin Box in modal
+      let adminModalBox = '';
+      if (isAdminMode) {
+        adminModalBox = `
+          <div style="background:rgba(232,193,117,0.08);border:1px solid rgba(232,193,117,0.35);border-radius:8px;padding:16px;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <span style="font-size:0.75rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;">⚡ Panel Interno Vendedor</span>
+              <span style="font-size:0.75rem;color:var(--muted);">ID: ${v.id}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.8rem;background:var(--soft-ink);padding:12px;border-radius:6px;margin-bottom:12px;">
+              <div><span style="color:var(--muted)">Precio Fuente Real:</span> <strong style="color:#93c5fd;">USD ${pricing.raw.toLocaleString('es-PY')}</strong></div>
+              <div><span style="color:var(--muted)">Margen FOP:</span> <strong style="color:#22c55e;">+USD ${FOP_USD.toLocaleString('es-PY')}</strong></div>
+              <div><span style="color:var(--muted)">Precio FOB Cliente:</span> <strong style="color:var(--red);">${fmtUSD(pricing.fob)}</strong></div>
+              <div><span style="color:var(--muted)">Total Est. PY:</span> <strong style="color:var(--gold);">≈ ${fmtUSD(pricing.total)}</strong></div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              ${sourceUrl ? `<a href="${sourceUrl}" target="_blank" rel="noopener" class="btn-src-link" style="flex:1;text-align:center;justify-content:center;padding:10px;">🔗 Abrir Anuncio en Fuente Original</a>` : ''}
+              <button onclick="copyQuote('${v.id}')" id="btnCopyQuote" class="btn-src-link" style="flex:1;background:var(--soft-ink);color:var(--white);border-color:var(--line);text-align:center;justify-content:center;padding:10px;">📋 Copiar Cotización</button>
+            </div>
+          </div>
+        `;
+      }
+
       document.getElementById('modalContent').innerHTML = `
+        ${adminModalBox}
+
         <!-- MEDIA PRINCIPAL -->
         <div class="modal-media-wrap">
           ${mainPhoto
-            ? `<img id="modalMainImg" src="${API_BASE}/api/img?url=${encodeURIComponent(mainPhoto)}" alt="${v.name || ''}">`
+            ? `<img id="modalMainImg" src="${API_BASE}/api/img?url=${encodeURIComponent(mainPhoto)}" alt="${title}">`
             : '<div style="font-size:3rem">🚙</div>'
           }
         </div>
@@ -1270,7 +1596,7 @@
         <!-- TIRA DE FOTOS / GALERÍA -->
         ${thumbsHtml}
 
-        <!-- DESGLOSE PRECIO COMPLETO -->
+        <!-- DESGLOSE PRECIO -->
         <div style="background:rgba(229,9,20,0.07);border:1px solid rgba(229,9,20,0.22);border-radius:8px;padding:16px 18px;margin-bottom:16px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
             <span style="background:var(--red);color:#fff;font-size:0.62rem;font-weight:800;letter-spacing:.08em;padding:2px 8px;border-radius:999px;text-transform:uppercase;">PRECIO FOB</span>
@@ -1333,7 +1659,7 @@
 
         <!-- BOTÓN WHATSAPP -->
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);text-align:center;">
-          <a href="https://wa.me/595981174316?text=Hola%20MDM%2C%20me%20interesa%20importar%20este%20SUV%3A%20${encodeURIComponent((v.name||v.model||'')+'%20FOB%20'+fmtUSD(pricing.fob))}"
+          <a href="https://wa.me/595981174316?text=Hola%20MDM%2C%20me%20interesa%20importar%20este%20SUV%3A%20${encodeURIComponent(title+'%20FOB%20'+fmtUSD(pricing.fob))}"
              target="_blank" rel="noopener"
              style="display:inline-block;background:var(--red);color:#fff;font-weight:700;font-size:0.92rem;padding:14px 32px;border-radius:8px;text-decoration:none;transition:background .2s;"
              onmouseover="this.style.background='var(--red-dark)'" onmouseout="this.style.background='var(--red)'">
@@ -1341,6 +1667,31 @@
           </a>
         </div>
       `;
+    }
+
+    function copyQuote(vid) {
+      // Find item
+      const item = (state.items || []).find(x => x.id === vid);
+      const pricing = getPricing(item || { price_usd: 0 });
+      const title = item ? (item.name || `${item.make} ${item.model} ${item.year}`) : 'SUV Corea';
+      const text =
+        `*MDM Paraguay - Cotización de Importación*\n` +
+        `🚗 *${title}*\n` +
+        `📅 Año: ${item?.year || '—'} | 🛣️ Km: ${item?.mileage_km ? Number(item.mileage_km).toLocaleString('es-PY')+' km' : '—'} | ⛽ ${item?.fuel || '—'}\n\n` +
+        `💵 *PRECIO FOB (Puerto Corea):* ${fmtUSD(pricing.fob)}\n` +
+        `🚢 *+ Flete RORO:* USD ${RORO_USD.toLocaleString('es-PY')}\n` +
+        `🚛 *+ Cigüeña (PY aprox.):* ≈ USD ${CIGUENA_USD.toLocaleString('es-PY')}\n` +
+        `─────────────────────\n` +
+        `🏁 *TOTAL ESTIMADO LLEGADA:* ≈ ${fmtUSD(pricing.total)}\n\n` +
+        `¿Querés que reservemos o inspeccionemos esta unidad?`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('btnCopyQuote');
+        if (btn) {
+          btn.textContent = '✅ ¡Copiado!';
+          setTimeout(() => { if (btn) btn.textContent = '📋 Copiar Cotización'; }, 2000);
+        }
+      });
     }
 
     function changeModalPhoto(url, el) {
