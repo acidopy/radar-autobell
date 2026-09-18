@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Vendedores | MDM Paraguay</title>
+  <link rel="icon" href="https://www.mdm.com.py/assets/images/logo-mdm.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black:#070709; --ink:#141417; --soft:#232328; --white:#fff;
+      --muted:#a8a8af; --line:rgba(255,255,255,0.10);
+      --red:#e50914; --red-dk:#a80008; --gold:#e8c175;
+      --green:#22c55e; --blue:#3b82f6;
+      --r:10px; --rs:6px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--black);color:var(--white);font-family:Inter,sans-serif;line-height:1.5}
+    a{color:inherit;text-decoration:none}
+
+    /* LOGIN */
+    #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;
+      background:radial-gradient(ellipse at 50% 0%,rgba(229,9,20,.12) 0%,transparent 60%),var(--black)}
+    .lb{background:var(--ink);border:1px solid var(--line);border-radius:var(--r);padding:40px 36px;width:100%;max-width:380px;text-align:center}
+    .lb img{height:42px;margin:0 auto 22px;display:block}
+    .lb h2{font-size:1.05rem;font-weight:700;margin-bottom:4px}
+    .lb p{font-size:.8rem;color:var(--muted);margin-bottom:26px}
+    .field{text-align:left;margin-bottom:13px}
+    .field label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:5px}
+    .field input{width:100%;background:var(--soft);border:1px solid var(--line);border-radius:var(--rs);color:var(--white);font-family:inherit;font-size:.88rem;padding:10px 12px;outline:none;transition:border-color .2s}
+    .field input:focus{border-color:var(--red)}
+    .btn-primary{width:100%;background:var(--red);border:none;border-radius:var(--rs);color:#fff;font-family:inherit;font-size:.88rem;font-weight:700;padding:12px;cursor:pointer;transition:background .2s;margin-top:4px}
+    .btn-primary:hover{background:var(--red-dk)}
+    #loginErr{color:#ff6b6b;font-size:.78rem;margin-top:8px;min-height:18px}
+
+    /* SHELL */
+    #appShell{display:none}
+    .hdr{position:sticky;top:0;z-index:100;background:rgba(7,7,9,.92);border-bottom:1px solid var(--line);backdrop-filter:blur(18px)}
+    .nav{width:min(1400px,calc(100% - 32px));margin:0 auto;min-height:60px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .nav-l{display:flex;align-items:center;gap:12px}
+    .nav-l img{height:32px}
+    .nav-sep{width:1px;height:24px;background:var(--line)}
+    .nav-tag{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--red)}
+    .nav-r{font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:12px}
+    .nav-r strong{color:var(--white)}
+    .btn-out{background:none;border:1px solid var(--line);border-radius:var(--rs);color:var(--muted);font-family:inherit;font-size:.72rem;padding:4px 10px;cursor:pointer;transition:all .2s}
+    .btn-out:hover{border-color:var(--red);color:var(--red)}
+
+    /* TABS */
+    .tabs{background:var(--ink);border-bottom:1px solid var(--line)}
+    .tabs-i{width:min(1400px,calc(100% - 32px));margin:0 auto;display:flex;gap:2px;padding:0 2px}
+    .tb{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:inherit;font-size:.82rem;font-weight:600;padding:13px 16px;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .tb:hover{color:var(--white)}
+    .tb.on{color:var(--red);border-bottom-color:var(--red)}
+
+    /* MAIN */
+    .main{width:min(1400px,calc(100% - 32px));margin:0 auto;padding:24px 0 60px}
+    .tc{display:none}
+    .tc.on{display:block}
+
+    /* STATS */
+    .sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+    .sc{background:var(--ink);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+    .sv{font-size:1.9rem;font-weight:800;display:block;margin-bottom:4px}
+    .sv.r{color:var(--red)}.sv.g{color:var(--green)}.sv.go{color:var(--gold)}.sv.b{color:var(--blue)}
+    .sl{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+    .act-card{background:var(--ink);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:20px}
+    .act-card h3{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--red);margin-bottom:14px}
+    .act-btns{display:flex;gap:10px;flex-wrap:wrap}
+
+    /* BUTTONS */
+    .btn-red{background:var(--red);border:none;border-radius:var(--rs);color:#fff;font-family:inherit;font-size:.8rem;font-weight:700;padding:9px 18px;cursor:pointer;transition:background .2s}
+    .btn-red:hover{background:var(--red-dk)}
+    .btn-ghost{background:var(--soft);border:1px solid var(--line);border-radius:var(--rs);color:var(--muted);font-family:inherit;font-size:.8rem;padding:9px 16px;cursor:pointer;transition:all .2s;display:inline-block}
+    .btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+    .btn-wa{background:#25D366;border:none;border-radius:var(--rs);color:#000;font-family:inherit;font-size:.7rem;font-weight:700;padding:5px 9px;cursor:pointer;white-space:nowrap;display:inline-block}
+    .btn-src{background:var(--soft);border:1px solid rgba(232,193,117,.4);border-radius:var(--rs);color:var(--gold);font-family:inherit;font-size:.7rem;padding:5px 9px;cursor:pointer;white-space:nowrap;display:inline-block;transition:all .2s}
+    .btn-src:hover{background:rgba(232,193,117,.15)}
+
+    /* TOOLBAR */
+    .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+    .inp-s{flex:1;min-width:180px;background:var(--ink);border:1px solid var(--line);border-radius:var(--rs);color:var(--white);font-family:inherit;font-size:.83rem;padding:8px 12px;outline:none;transition:border-color .2s}
+    .inp-s:focus{border-color:var(--red)}
+    .sel{background:var(--ink);border:1px solid var(--line);border-radius:var(--rs);color:var(--white);font-family:inherit;font-size:.8rem;padding:8px 10px;outline:none;appearance:none;cursor:pointer}
+
+    /* TABLE */
+    .tw{background:var(--ink);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;overflow-x:auto}
+    table{width:100%;border-collapse:collapse;font-size:.78rem}
+    th{background:var(--soft);padding:10px 12px;text-align:left;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);white-space:nowrap;border-bottom:1px solid var(--line)}
+    td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:rgba(255,255,255,.02)}
+
+    /* DESGLOSE TABLE CELLS */
+    .td-name{font-weight:600;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .td-src{color:var(--muted);font-size:.72rem;white-space:nowrap}          /* precio real fuente */
+    .td-fop{color:var(--blue);font-size:.72rem;white-space:nowrap}            /* +FOP */
+    .td-fob{color:var(--red);font-weight:800;white-space:nowrap}              /* FOB mostrado */
+    .td-roro{color:var(--muted);font-size:.72rem;white-space:nowrap}
+    .td-cig{color:var(--muted);font-size:.72rem;white-space:nowrap}
+    .td-total{color:var(--gold);font-weight:800;white-space:nowrap}
+    .pill{display:inline-block;background:var(--soft);border:1px solid var(--line);border-radius:999px;font-size:.6rem;padding:2px 6px}
+    .pill.g{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.3);color:#4ade80}
+    .pill.r{background:rgba(229,9,20,.12);border-color:rgba(229,9,20,.3);color:var(--red)}
+
+    /* PAG */
+    .pag{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+    .btn-pag{background:var(--ink);border:1px solid var(--line);border-radius:var(--rs);color:var(--white);font-family:inherit;font-size:.78rem;padding:6px 14px;cursor:pointer;transition:all .2s}
+    .btn-pag:hover:not(:disabled){border-color:var(--red);color:var(--red)}
+    .btn-pag:disabled{opacity:.35;cursor:not-allowed}
+    .pag-info{font-size:.78rem;color:var(--muted)}
+
+    /* COTIZADOR */
+    .cg{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    @media(max-width:720px){.cg{grid-template-columns:1fr}}
+    .cbox{background:var(--ink);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+    .cbox h3{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--red);margin-bottom:16px}
+    .cbox.gold h3{color:var(--gold)}
+    .prev{background:var(--soft);border-radius:var(--rs);padding:14px;font-size:.82rem;white-space:pre-wrap;line-height:1.75;color:var(--white);min-height:220px}
+    .btn-copy{background:var(--soft);border:1px solid var(--line);border-radius:var(--rs);color:var(--muted);font-family:inherit;font-size:.76rem;padding:7px 14px;cursor:pointer;transition:all .2s;margin-top:10px}
+    .btn-copy:hover{border-color:var(--gold);color:var(--gold)}
+    .btn-sendwa{background:#25D366;border:none;border-radius:var(--rs);color:#000;font-family:inherit;font-size:.8rem;font-weight:700;padding:9px 16px;cursor:pointer;margin-top:10px;margin-left:8px}
+
+    /* CONFIG */
+    .cfg-card{background:var(--ink);border:1px solid var(--line);border-radius:var(--r);padding:22px;margin-bottom:20px}
+    .cfg-card h3{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--red);margin-bottom:16px}
+    .cfg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+    .cfg-item label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px}
+    .cfg-item input{width:100%;background:var(--soft);border:1px solid var(--line);border-radius:var(--rs);color:var(--white);font-family:inherit;font-size:.88rem;font-weight:700;padding:9px 11px;outline:none;transition:border-color .2s}
+    .cfg-item input:focus{border-color:var(--red)}
+    .cfg-note{font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.5}
+    .saved-msg{color:var(--green);font-size:.78rem;margin-top:10px;display:none}
+
+    #scanMsg{margin-top:10px;font-size:.8rem;color:var(--muted)}
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="lb">
+    <img src="https://www.mdm.com.py/assets/images/logo-mdm.png" alt="MDM">
+    <h2>Panel de Vendedores</h2>
+    <p>Acceso exclusivo equipo MDM</p>
+    <div class="field"><label>Usuario</label><input type="text" id="iUser" placeholder="usuario" autocomplete="username"></div>
+    <div class="field"><label>Código de acceso</label><input type="password" id="iPass" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="btn-primary" onclick="doLogin()">Ingresar →</button>
+    <div id="loginErr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appShell">
+  <header class="hdr">
+    <nav class="nav">
+      <div class="nav-l">
+        <a href="https://www.mdm.com.py"><img src="https://www.mdm.com.py/assets/images/logo-mdm.png" alt="MDM"></a>
+        <div class="nav-sep"></div>
+        <span class="nav-tag">⚙️ Panel Vendedores</span>
+      </div>
+      <div class="nav-r">Hola, <strong id="lblUser">—</strong> <button class="btn-out" onclick="doLogout()">Salir</button></div>
+    </nav>
+  </header>
+
+  <div class="tabs">
+    <div class="tabs-i">
+      <button class="tb on"  onclick="goTab('dashboard')">📊 Dashboard</button>
+      <button class="tb"     onclick="goTab('vehiculos')">🚙 Vehículos</button>
+      <button class="tb"     onclick="goTab('cotizador')">💬 Cotizador</button>
+      <button class="tb"     onclick="goTab('config')">⚙️ Configuración</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div id="tab-dashboard" class="tc on">
+      <div class="sg">
+        <div class="sc"><span class="sv r" id="s-total">—</span><span class="sl">Total Vehículos</span></div>
+        <div class="sc"><span class="sv go" id="s-new">—</span><span class="sl">Nuevos Hoy</span></div>
+        <div class="sc"><span class="sv g" id="s-opp">—</span><span class="sl">Oportunidades</span></div>
+        <div class="sc"><span class="sv b" id="s-drops">—</span><span class="sl">Precios Bajaron</span></div>
+        <div class="sc"><span class="sv" id="s-scan" style="font-size:.85rem;color:var(--muted)">—</span><span class="sl">Último Escaneo</span></div>
+      </div>
+      <div class="act-card">
+        <h3>⚡ Acciones rápidas</h3>
+        <div class="act-btns">
+          <button class="btn-red" onclick="triggerScan()">🔄 Actualizar catálogo completo</button>
+          <a href="/buscadorSUV/" target="_blank" class="btn-ghost">🌐 Ver página pública</a>
+        </div>
+        <div id="scanMsg"></div>
+      </div>
+    </div>
+
+    <!-- VEHÍCULOS -->
+    <div id="tab-vehiculos" class="tc">
+      <div class="toolbar">
+        <input class="inp-s" id="aSearch" placeholder="🔍 Buscar modelo, año..." oninput="aDebounce()">
+        <select class="sel" id="aModel" onchange="loadV()">
+          <option value="">Todos los modelos</option>
+          <option value="Sportage">Kia Sportage</option>
+          <option value="Sorento">Kia Sorento</option>
+          <option value="Tucson">Hyundai Tucson</option>
+          <option value="Santa Fe">Hyundai Santa Fe</option>
+        </select>
+        <select class="sel" id="aDrive" onchange="loadV()">
+          <option value="">2WD + 4WD</option>
+          <option value="4WD">Solo 4WD</option>
+          <option value="2WD">Solo 2WD</option>
+        </select>
+        <select class="sel" id="aSunroof" onchange="loadV()">
+          <option value="">Con y sin techo</option>
+          <option value="1">Con techo solar</option>
+          <option value="0">Sin techo solar</option>
+        </select>
+        <select class="sel" id="aSort" onchange="loadV()">
+          <option value="best_deal">⭐ Mejor deal</option>
+          <option value="price_asc">💲 Menor precio</option>
+          <option value="price_desc">💰 Mayor precio</option>
+          <option value="newest_seen">⏱️ Recién vistos</option>
+        </select>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th>Vehículo</th>
+            <th>Año</th><th>Km</th><th>Comb.</th><th>Trans.</th><th>4WD</th><th>Techo</th>
+            <th title="Precio original en la fuente">Precio Fuente</th>
+            <th title="+$800 USD Flete Océano Pacífico">+ FOP $800</th>
+            <th title="Precio FOB = Fuente + FOP">= FOB 🇰🇷</th>
+            <th title="+$2800 RORO marítimo">+ RORO</th>
+            <th title="+$700 Cigüeña Paraguay">+ Cigüeña</th>
+            <th title="Total estimado en Paraguay">≈ Total PY</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr></thead>
+          <tbody id="aTbody"><tr><td colspan="15" style="text-align:center;padding:36px;color:var(--muted)">Cargando...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="pag">
+        <button class="btn-pag" id="aPrev" onclick="aChangePage(-1)">← Anterior</button>
+        <span class="pag-info" id="aPageInfo">—</span>
+        <button class="btn-pag" id="aNext" onclick="aChangePage(1)">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- COTIZADOR -->
+    <div id="tab-cotizador" class="tc">
+      <div class="cg">
+        <div class="cbox">
+          <h3>📋 Datos de la cotización</h3>
+          <div class="field"><label>Cliente</label><input type="text" id="cNom" placeholder="Nombre del cliente"></div>
+          <div class="field"><label>Vehículo</label><input type="text" id="cVeh" placeholder="Ej: Kia Sportage 2022 4WD"></div>
+          <div class="field"><label>Precio Fuente USD (real)</label><input type="number" id="cSrc" placeholder="Ej: 9700" oninput="updPrev()"></div>
+          <div class="field"><label>FOP (Flete Pacífico) USD</label><input type="number" id="cFop" oninput="updPrev()"></div>
+          <div class="field"><label>RORO (marítimo) USD</label><input type="number" id="cRoro" oninput="updPrev()"></div>
+          <div class="field"><label>Cigüeña Paraguay USD</label><input type="number" id="cCig" oninput="updPrev()"></div>
+          <div class="field"><label>Notas</label><input type="text" id="cNot" placeholder="Sunroof, 4WD, cuero..." oninput="updPrev()"></div>
+          <div class="field"><label>Vendedor</label><input type="text" id="cVend" oninput="updPrev()"></div>
+        </div>
+        <div class="cbox gold">
+          <h3>📱 Vista previa</h3>
+          <div class="prev" id="prevBox">Completá los datos...</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+            <button class="btn-copy" onclick="doCopy()">📋 Copiar</button>
+            <button class="btn-sendwa" onclick="doWA()">💬 Enviar WA</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div id="tab-config" class="tc">
+      <div class="cfg-card">
+        <h3>💲 Costos de importación</h3>
+        <div class="cfg-grid">
+          <div class="cfg-item">
+            <label>FOP — Flete Pacífico (USD)</label>
+            <input type="number" id="cfFop" value="800">
+            <div class="cfg-note">Se suma internamente al precio fuente.<br>El cliente ve el resultado como "Precio FOB".</div>
+          </div>
+          <div class="cfg-item">
+            <label>RORO — Flete marítimo (USD)</label>
+            <input type="number" id="cfRoro" value="2800">
+          </div>
+          <div class="cfg-item">
+            <label>Cigüeña Paraguay (USD)</label>
+            <input type="number" id="cfCig" value="700">
+            <div class="cfg-note">Valor aproximado, se abona en Paraguay.</div>
+          </div>
+        </div>
+        <button class="btn-red" style="margin-top:18px" onclick="saveCfg()">💾 Guardar cambios</button>
+        <div class="saved-msg" id="savedMsg">✅ Guardado correctamente</div>
+      </div>
+      <div class="cfg-card">
+        <h3>👤 Usuarios con acceso</h3>
+        <table style="width:100%">
+          <thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Estado</th></tr></thead>
+          <tbody id="uTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = 'https://radar-autobell.onrender.com';
+
+// ── USUARIOS ──
+const USERS = {
+  samuel: { hash:'4b5dfec171fb185a4b8f7a109337cb19fe456d9d998c054e54b59b2e15708b43', nombre:'Samuel', rol:'Vendedor' }
+};
+
+// ── COSTOS (localStorage) ──
+const C = {
+  get fop()     { return +localStorage.getItem('c_fop')  || 800  },
+  get roro()    { return +localStorage.getItem('c_roro') || 2800 },
+  get ciguena() { return +localStorage.getItem('c_cig')  || 700  },
+  save(f,r,c)  { localStorage.setItem('c_fop',f); localStorage.setItem('c_roro',r); localStorage.setItem('c_cig',c); }
+};
+
+function $ (id){ return document.getElementById(id) }
+function fmt(n){ return n ? '$'+Number(n).toLocaleString('es-PY')+' USD' : '—' }
+function fmtN(n){ return n ? '$'+Number(n).toLocaleString('es-PY') : '—' }
+
+// ── AUTH ──
+async function sha256(s){
+  const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+  return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+async function doLogin(){
+  const u=$('iUser').value.trim().toLowerCase(), p=$('iPass').value, e=$('loginErr');
+  if(!u||!p){e.textContent='Completá usuario y código.';return}
+  const h=await sha256(p), ud=USERS[u];
+  if(!ud||ud.hash!==h){e.textContent='❌ Usuario o código incorrecto.';return}
+  sessionStorage.setItem('mdm_u',u); e.textContent=''; showApp(u);
+}
+$('iPass').addEventListener('keydown',ev=>{if(ev.key==='Enter')doLogin()});
+function doLogout(){ sessionStorage.removeItem('mdm_u'); $('appShell').style.display='none'; $('loginScreen').style.display='flex'; }
+function showApp(u){
+  $('loginScreen').style.display='none'; $('appShell').style.display='block';
+  $('lblUser').textContent=USERS[u]?.nombre||u;
+  loadStats(); initCfg(); initCotiz(); renderUserTable();
+}
+addEventListener('DOMContentLoaded',()=>{ const u=sessionStorage.getItem('mdm_u'); if(u&&USERS[u])showApp(u); });
+
+// ── TABS ──
+const TAB_IDS=['dashboard','vehiculos','cotizador','config'];
+function goTab(id){
+  document.querySelectorAll('.tb').forEach((b,i)=>b.classList.toggle('on',TAB_IDS[i]===id));
+  document.querySelectorAll('.tc').forEach(c=>c.classList.remove('on'));
+  $('tab-'+id).classList.add('on');
+  if(id==='vehiculos') loadV();
+}
+
+// ── STATS ──
+async function loadStats(){
+  try{
+    const d=await fetch(`${API}/api/stats`).then(r=>r.json());
+    $('s-total').textContent = d.total_active??'—';
+    $('s-new').textContent   = d.new_today??'—';
+    $('s-opp').textContent   = d.opportunities??'—';
+    $('s-drops').textContent = d.price_drops??'—';
+    if(d.last_scan_time){
+      const dt=new Date(d.last_scan_time);
+      $('s-scan').textContent=dt.toLocaleString('es-PY',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    }
+  }catch{}
+}
+async function triggerScan(){
+  const m=$('scanMsg'); m.textContent='⏳ Iniciando actualización completa de los 4 modelos...';
+  try{
+    await fetch(`${API}/api/scan`,{method:'POST'});
+    m.textContent='✅ Actualización iniciada. Puede tardar varios minutos. Recargá las estadísticas luego.';
+  }catch{ m.textContent='❌ No se pudo conectar.'; }
+}
+
+// ── VEHÍCULOS TABLE ──
+let aState={page:1,limit:25,total:0,deb:null};
+
+async function loadV(){
+  const tbody=$('aTbody');
+  tbody.innerHTML=`<tr><td colspan="15" style="text-align:center;padding:32px;color:var(--muted)">Cargando...</td></tr>`;
+  const q=$('aSearch').value.trim();
+  const model=$('aModel').value;
+  const drive=$('aDrive').value;
+  const sunroof=$('aSunroof').value;
+  const sort=$('aSort').value;
+  const params=new URLSearchParams({
+    limit:aState.limit, offset:(aState.page-1)*aState.limit,
+    sort_by:sort,
+    ...(q?{q}:{}), ...(model?{model}:{}),
+    ...(drive?{drivetrain:drive}:{}),
+    ...(sunroof!==''?{sunroof}:{})
+  });
+  try{
+    const data=await fetch(`${API}/api/vehicles?${params}`).then(r=>r.json());
+    const items=data.items||data; const total=data.total||items.length;
+    aState.total=total;
+    const tp=Math.ceil(total/aState.limit)||1;
+    $('aPageInfo').textContent=`Página ${aState.page}/${tp} — ${total.toLocaleString('es-PY')} vehículos`;
+    $('aPrev').disabled=aState.page<=1;
+    $('aNext').disabled=aState.page>=tp;
+    if(!items.length){
+      tbody.innerHTML=`<tr><td colspan="15" style="text-align:center;padding:32px;color:var(--muted)">Sin resultados</td></tr>`;
+      return;
+    }
+    tbody.innerHTML=items.map(v=>{
+      const src  = Number(v.price_usd)||0;
+      const fop  = C.fop;
+      const fob  = src ? src+fop : 0;
+      const totalPY = fob ? fob+C.roro+C.ciguena : 0;
+      const km   = v.mileage_km ? Number(v.mileage_km).toLocaleString('es-PY')+' km' : '—';
+      const waMsg=encodeURIComponent(
+        `🚙 *${v.name||v.model||'SUV'}*\n📅 ${v.year||'—'} | ${km}\n⛽ ${v.fuel||'—'} | ${v.transmission||'—'}${v.drivetrain?' | '+v.drivetrain:''}\n${v.sunroof?'☀️ Con techo solar\n':''}`+
+        `\n💰 *Precio FOB Corea: ${fmtN(fob)} USD*\n+ RORO: ${fmtN(C.roro)} USD\n+ Cigüeña: ≈${fmtN(C.ciguena)} USD\n`+
+        `\n🏁 *Total estimado PY: ≈${fmtN(totalPY)} USD*\n\n📲 Más info: wa.me/595981174316`
+      );
+      const srcUrl=v.url||'';
+      return `<tr>
+        <td class="td-name" title="${v.name||''}">${v.name||v.model||'—'}</td>
+        <td>${v.year||'—'}</td>
+        <td style="white-space:nowrap">${km}</td>
+        <td>${v.fuel||'—'}</td>
+        <td style="white-space:nowrap;font-size:.72rem">${v.transmission||'—'}</td>
+        <td>${v.drivetrain?.includes('4WD')?'<span class="pill g">4WD</span>':'<span class="pill">2WD</span>'}</td>
+        <td>${v.sunroof?'☀️':'—'}</td>
+        <td class="td-src">${src?fmtN(src):'—'}</td>
+        <td class="td-fop">+${fmtN(fop)}</td>
+        <td class="td-fob">${fob?fmtN(fob):'—'}</td>
+        <td class="td-roro">+${fmtN(C.roro)}</td>
+        <td class="td-cig">+≈${fmtN(C.ciguena)}</td>
+        <td class="td-total">${totalPY?'≈'+fmtN(totalPY):'—'}</td>
+        <td>${v.opportunity_flag?'<span class="pill g">⭐ Oport.</span>':'<span class="pill">Normal</span>'}</td>
+        <td style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+          <a class="btn-wa" href="https://wa.me/?text=${waMsg}" target="_blank">💬 WA</a>
+          ${srcUrl?`<a class="btn-src" href="${srcUrl}" target="_blank">🔗 Fuente</a>`:'—'}
+        </td>
+      </tr>`;
+    }).join('');
+  }catch(e){
+    tbody.innerHTML=`<tr><td colspan="15" style="text-align:center;padding:32px;color:#ff6b6b">Error: ${e.message}</td></tr>`;
+  }
+}
+function aDebounce(){ clearTimeout(aState.deb); aState.deb=setTimeout(()=>{aState.page=1;loadV();},380); }
+function aChangePage(d){ const tp=Math.ceil(aState.total/aState.limit); const np=aState.page+d; if(np<1||np>tp)return; aState.page=np; loadV(); }
+
+// ── COTIZADOR ──
+function initCotiz(){
+  $('cFop').value  = C.fop;
+  $('cRoro').value = C.roro;
+  $('cCig').value  = C.ciguena;
+  const u=sessionStorage.getItem('mdm_u');
+  $('cVend').value = USERS[u]?.nombre||'MDM';
+  updPrev();
+}
+function updPrev(){
+  const nom=$('cNom').value||'[Cliente]';
+  const veh=$('cVeh').value||'[Vehículo]';
+  const src=+$('cSrc').value||0;
+  const fop=+$('cFop').value||0;
+  const roro=+$('cRoro').value||0;
+  const cig=+$('cCig').value||0;
+  const not=$('cNot').value;
+  const vend=$('cVend').value||'MDM';
+  const fob=src+fop;
+  const total=fob+roro+cig;
+  $('prevBox').textContent=
+`Hola ${nom} 👋
+
+Te comparto la cotización del vehículo de tu interés:
+
+🚙 *${veh}*${not?'\n📝 '+not:''}
+
+Precio Fuente Corea:       ${fmt(src)}
++ FOP (Flete Pacífico):    +${fmt(fop)}
+─────────────────────────────
+💰 Precio FOB Puerto Corea: *${fmt(fob)}*
+🚢 Flete RoRo (marítimo):   *${fmt(roro)}*
+🚛 Cigüeña en Paraguay:     *≈${fmt(cig)}*
+─────────────────────────────
+🏁 Total estimado llegada:  *≈${fmt(total)}*
+
+⚠️ Precios referenciales, pueden variar según tipo de cambio y disponibilidad.
+
+📞 ${vend} — 📲 wa.me/595981174316
+🌐 www.mdm.com.py`;
+}
+function doCopy(){ navigator.clipboard.writeText($('prevBox').textContent).then(()=>{ const b=document.querySelector('.btn-copy'); b.textContent='✅ Copiado!'; setTimeout(()=>b.textContent='📋 Copiar',2000); }); }
+function doWA(){ window.open(`https://wa.me/?text=${encodeURIComponent($('prevBox').textContent)}`,'_blank'); }
+
+// ── CONFIG ──
+function initCfg(){
+  $('cfFop').value  = C.fop;
+  $('cfRoro').value = C.roro;
+  $('cfCig').value  = C.ciguena;
+}
+function saveCfg(){
+  C.save(+$('cfFop').value, +$('cfRoro').value, +$('cfCig').value);
+  $('savedMsg').style.display='block';
+  setTimeout(()=>$('savedMsg').style.display='none',3000);
+  initCotiz(); loadV();
+}
+function renderUserTable(){
+  $('uTbody').innerHTML=Object.entries(USERS).map(([u,d])=>`
+    <tr><td style="font-weight:600">${u}</td><td>${d.nombre}</td>
+    <td><span class="pill">${d.rol}</span></td>
+    <td><span class="pill g">Activo</span></td></tr>
+  `).join('');
+}
+</script>
+</body>
+</html>

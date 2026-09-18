@@ -97,17 +97,15 @@ def evaluate_vehicle_opportunity(v: Dict[str, Any], stats: Dict[Tuple[str, int],
 
     if price_diff_pct >= 10.0:
         is_opportunity = 1
-        med_str = f"{int(median_price):,}"
-        price_str = f"{price:,}"
-        reasons.append(f"{price_diff_pct}% por debajo de la mediana ({model} {year or ''}: ${price_str} USD vs ${med_str} USD)")
+        reasons.append(f"⭐ {price_diff_pct}% por debajo del promedio de mercado ({model} {year or ''})")
         if mileage_diff_pct > 15.0:
             diff_km = int(abs(mean_mileage - mileage))
-            reasons.append(f"{diff_km:,} km menos que el promedio de su cohorte")
+            reasons.append(f"{diff_km:,} km menos que el promedio de su categoría")
     elif price_diff_pct >= 5.0 and mileage_diff_pct >= 25.0:
         is_opportunity = 1
-        reasons.append(f"5% bajo mediana con kilometraje excepcionalmente bajo ({mileage:,} km vs prom {int(mean_mileage):,} km)")
+        reasons.append(f"⭐ Excelente relación precio con kilometraje excepcionalmente bajo ({mileage:,} km)")
 
-    reason_str = "; ".join(reasons) if reasons else "Precio acorde al rango de mercado."
+    reason_str = " · ".join(reasons) if reasons else "Precio acorde al rango de mercado."
 
     # Score formula: 0 to 100 (RADAR AUTOBELL index)
     score = 50.0

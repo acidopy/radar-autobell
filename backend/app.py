@@ -11,7 +11,7 @@ from pydantic import BaseModel
 import httpx
 
 from backend.database import (
-    init_db, query_vehicles, get_vehicle_by_id,
+    init_db, query_vehicles, get_vehicle_by_id, update_vehicle_photos,
     get_setting, set_setting, delete_setting,
     set_favorite, remove_favorite, get_favorites,
     save_search, get_saved_searches, delete_saved_search,
@@ -228,10 +228,38 @@ def get_vehicle(vehicle_id: str):
     vehicle = get_vehicle_by_id(vehicle_id)
     if not vehicle:
         raise HTTPException(status_code=404, detail=f"Vehículo con ID {vehicle_id} no encontrado.")
+    
+    # On demand: If fewer than 3 photos, fetch all detail photos from supplier
+    existing_photos = vehicle.get("photos") or []
+    if len(existing_photos) < 3:
+        try:
+            connector = AutobellConnector()
+            raw_photos = connector.get_vehicle_photos(vehicle_id)
+            new_photos = list(existing_photos)
+            for item in raw_photos:
+                if isinstance(item, dict):
+                    # extract resource or thumbnailResource
+                    rel = item.get("resource") or item.get("thumbnailResource", {}).get("LARGE") or item.get("thumbnailResource", {}).get("MEDIUM")
+                    if rel:
+                        url = rel if rel.startswith("http") else f"https://cdn.autobellglobal.com/images/{rel.lstrip('/')}"
+                        if url not in new_photos:
+                            new_photos.append(url)
+                elif isinstance(item, str):
+                    url = item if item.startswith("http") else f"https://cdn.autobellglobal.com/images/{item.lstrip('/')}"
+                    if url not in new_photos:
+                        new_photos.append(url)
+            if len(new_photos) > len(existing_photos):
+                update_vehicle_photos(vehicle_id, new_photos)
+                vehicle["photos"] = new_photos
+                if new_photos:
+                    vehicle["thumbnail_url"] = new_photos[0]
+        except Exception as e:
+            pass
+
     return vehicle
 
 @app.post("/api/scan")
-def trigger_scan(max_per_model: int = 50, sync: bool = False, background_tasks: BackgroundTasks = None):
+def trigger_scan(max_per_model: int = 2000, sync: bool = False, background_tasks: BackgroundTasks = None):
     """
     Triggers 'BUSCAR NUEVOS ANUNCIOS' across all configured models.
     """

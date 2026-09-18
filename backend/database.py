@@ -479,6 +479,21 @@ def get_vehicle_by_id(vehicle_id: str) -> Optional[Dict[str, Any]]:
     conn.close()
     return v
 
+def update_vehicle_photos(vehicle_id: str, photos: List[str]) -> bool:
+    """Updates the photos list and thumbnail for a vehicle."""
+    if not photos:
+        return False
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE vehicles
+        SET photos = ?, thumbnail_url = ?
+        WHERE id = ?
+    """, (json.dumps(photos), photos[0] if photos else "", vehicle_id))
+    conn.commit()
+    conn.close()
+    return True
+
 def set_favorite(vehicle_id: str, tag: str = "guardado", notes: str = "") -> bool:
     conn = get_connection()
     cursor = conn.cursor()
