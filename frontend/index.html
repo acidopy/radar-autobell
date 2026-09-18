@@ -878,12 +878,246 @@
       font-size: 0.82rem;
       font-weight: 700;
     }
-    .cost-total span:last-child { color: var(--gold); }
-    .cost-note {
-      font-size: 0.65rem;
+    /* ── QUICK MODEL CHIPS (TOUCH SCROLL) ── */
+    .quick-chips-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 2px 14px;
+      margin-bottom: 12px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .quick-chips-scroll::-webkit-scrollbar { display: none; }
+
+    .chip-btn {
+      background: var(--soft-ink);
+      border: 1px solid var(--line);
+      border-radius: 999px;
       color: var(--muted);
-      margin-top: 2px;
-      opacity: 0.7;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 7px 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .chip-btn:hover, .chip-btn.active {
+      background: var(--red);
+      border-color: var(--red);
+      color: var(--white);
+    }
+    .chip-btn.gold-active.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #000;
+    }
+
+    /* ── BOTÓN TOGGLE FILTROS EN MÓVIL ── */
+    .btn-mobile-filter-toggle {
+      display: none;
+      width: 100%;
+      background: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      color: var(--white);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-mobile-filter-toggle:active {
+      background: var(--soft-ink);
+    }
+
+    /* ── BOTÓN FLOTANTE WHATSAPP EN MÓVIL ── */
+    .floating-wa-btn {
+      display: none;
+    }
+
+    /* ── RESPONSIVE MEDIA QUERIES ── */
+    @media (max-width: 860px) {
+      .main-wrap {
+        grid-template-columns: 1fr;
+        padding-top: 14px;
+      }
+      .btn-mobile-filter-toggle {
+        display: flex;
+      }
+      .filters-sidebar {
+        position: static;
+        display: none;
+        margin-bottom: 16px;
+      }
+      .filters-sidebar.mobile-open {
+        display: block;
+        animation: fadeIn 0.2s ease;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-6px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    }
+
+    @media (max-width: 640px) {
+      .nav {
+        min-height: 56px;
+        padding: 8px 0;
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+      }
+      .nav-brand {
+        justify-content: space-between;
+        width: 100%;
+      }
+      .nav-right {
+        justify-content: space-between;
+        width: 100%;
+      }
+      .mode-toggle-wrap {
+        flex: 1;
+        justify-content: center;
+      }
+      .mode-btn {
+        flex: 1;
+        padding: 6px 8px;
+        font-size: 0.72rem;
+        text-align: center;
+      }
+      .hero {
+        padding: 22px 14px 18px;
+      }
+      .hero h1 {
+        font-size: 1.5rem;
+        line-height: 1.25;
+      }
+      .hero p {
+        font-size: 0.82rem;
+        margin-bottom: 12px;
+      }
+      .hero-badges {
+        display: none;
+      }
+      .stats-inner {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .stat-item {
+        padding: 10px 8px;
+      }
+      .stat-item:nth-child(2) { border-right: none; }
+      .stat-item:nth-child(3) { border-top: 1px solid var(--line); }
+      .stat-item:nth-child(4) { border-top: 1px solid var(--line); border-right: none; }
+      .stat-item:nth-child(5) {
+        grid-column: span 2;
+        border-top: 1px solid var(--line);
+        border-right: none;
+        padding: 8px;
+      }
+      .stat-val { font-size: 1.3rem; }
+      .stat-label { font-size: 0.62rem; }
+
+      .results-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .search-input-wrap {
+        max-width: 100%;
+      }
+
+      .vehicles-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .v-card {
+        border-radius: 10px;
+      }
+      .v-card-img {
+        height: 220px;
+      }
+      .v-card-body {
+        padding: 14px;
+      }
+      .v-name {
+        font-size: 0.95rem;
+      }
+      .fob-amount {
+        font-size: 1.3rem;
+      }
+      .v-card-footer {
+        padding: 10px 14px;
+      }
+
+      /* Modal Bottom Sheet on Mobile */
+      .modal-bg {
+        align-items: flex-end;
+        padding: 0;
+      }
+      .modal-box {
+        max-height: 94vh;
+        border-radius: 20px 20px 0 0;
+        border-bottom: none;
+        position: relative;
+      }
+      .modal-box::before {
+        content: '';
+        display: block;
+        width: 38px;
+        height: 4px;
+        background: var(--muted);
+        opacity: 0.4;
+        border-radius: 2px;
+        margin: 8px auto 2px;
+      }
+      .modal-head {
+        padding: 10px 16px 12px;
+      }
+      .modal-content {
+        padding: 14px;
+      }
+      .modal-media-wrap {
+        height: 240px;
+        border-radius: 8px;
+      }
+      .modal-thumbs {
+        gap: 6px;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .modal-thumb {
+        width: 68px;
+        height: 48px;
+      }
+
+      /* Floating WA Button */
+      .floating-wa-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        bottom: 20px;
+        right: 18px;
+        background: #22c55e;
+        color: #fff;
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.5), 0 0 10px rgba(34,197,94,0.4);
+        font-size: 1.65rem;
+        z-index: 999;
+        text-decoration: none;
+        transition: transform 0.2s;
+      }
+      .floating-wa-btn:active {
+        transform: scale(0.92);
+      }
     }
   </style>
 </head>
@@ -973,8 +1207,14 @@
   <!-- MAIN -->
   <div class="main-wrap">
 
+    <!-- BOTÓN TOGGLE FILTROS EN MÓVIL -->
+    <button class="btn-mobile-filter-toggle" id="btnMobileFilterToggle" onclick="toggleMobileFilters()">
+      <span>🎛️ Filtros Avanzados (Año, Tracción, etc.)</span>
+      <span id="mobileFilterChevron">▼</span>
+    </button>
+
     <!-- SIDEBAR FILTROS -->
-    <aside class="filters-sidebar">
+    <aside class="filters-sidebar" id="filtersSidebar">
       <div class="filters-title">⚙️ Filtros</div>
 
       <div class="filter-group">
@@ -1068,6 +1308,17 @@
 
     <!-- RESULTADOS -->
     <section>
+      <!-- QUICK MODEL CHIPS (TOUCH SCROLL) -->
+      <div class="quick-chips-scroll" id="quickChips">
+        <button class="chip-btn active" data-model="" onclick="selectQuickModel('', this)">🚙 Todos</button>
+        <button class="chip-btn" data-model="Sportage" onclick="selectQuickModel('Sportage', this)">Sportage</button>
+        <button class="chip-btn" data-model="Sorento" onclick="selectQuickModel('Sorento', this)">Sorento</button>
+        <button class="chip-btn" data-model="Tucson" onclick="selectQuickModel('Tucson', this)">Tucson</button>
+        <button class="chip-btn" data-model="Santa Fe" onclick="selectQuickModel('Santa Fe', this)">Santa Fe</button>
+        <button class="chip-btn gold-active" id="chipOpp" onclick="toggleQuickOpp(this)">⭐ Oportunidades</button>
+        <button class="chip-btn" id="chipSunroof" onclick="toggleQuickSunroof(this)">☀️ Con Techo</button>
+      </div>
+
       <div class="results-header">
         <div class="results-count" id="resultsCount">Cargando...</div>
         <div class="search-input-wrap">
@@ -1097,6 +1348,15 @@
       </div>
     </section>
   </div>
+
+  <!-- FLOATING WHATSAPP BUTTON ON MOBILE -->
+  <a href="https://wa.me/595981174316?text=Hola%20MDM%2C%20quiero%20consultar%20sobre%20la%20importaci%C3%B3n%20de%20SUVs%20desde%20Corea"
+     class="floating-wa-btn"
+     target="_blank"
+     rel="noopener"
+     aria-label="Contactar por WhatsApp">
+    💬
+  </a>
 
   <!-- MODAL DETALLE -->
   <div id="detailModal" class="modal-bg hidden">
@@ -1265,12 +1525,66 @@
       document.getElementById('loginError').textContent = '';
     }
 
+    // ── MOBILE FILTER TOGGLE & QUICK CHIPS ──
+    function toggleMobileFilters() {
+      const sidebar = document.getElementById('filtersSidebar');
+      const chev = document.getElementById('mobileFilterChevron');
+      if (!sidebar) return;
+      sidebar.classList.toggle('mobile-open');
+      if (chev) {
+        chev.textContent = sidebar.classList.contains('mobile-open') ? '▲' : '▼';
+      }
+    }
+
+    function selectQuickModel(model, btn) {
+      document.getElementById('fModel').value = model;
+      syncChips();
+      state.page = 1;
+      loadVehicles();
+    }
+
+    function toggleQuickOpp(btn) {
+      const chk = document.getElementById('fOpportunity');
+      chk.checked = !chk.checked;
+      syncChips();
+      state.page = 1;
+      loadVehicles();
+    }
+
+    function toggleQuickSunroof(btn) {
+      const chk = document.getElementById('fSunroof');
+      chk.checked = !chk.checked;
+      syncChips();
+      state.page = 1;
+      loadVehicles();
+    }
+
+    function syncChips() {
+      const currentModel = document.getElementById('fModel').value;
+      const isOpp = document.getElementById('fOpportunity').checked;
+      const isSunroof = document.getElementById('fSunroof').checked;
+
+      document.querySelectorAll('#quickChips .chip-btn[data-model]').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-model') === currentModel);
+      });
+
+      const chipOpp = document.getElementById('chipOpp');
+      if (chipOpp) chipOpp.classList.toggle('active', isOpp);
+
+      const chipSunroof = document.getElementById('chipSunroof');
+      if (chipSunroof) chipSunroof.classList.toggle('active', isSunroof);
+    }
+
     // ── FILTROS ──
     function setupFilters() {
       const inputs = ['fModel','fYearMin','fYearMax','fPriceMax','fMileageMax',
                       'fFuel','fDrivetrain','fTransmission','fSort','fSunroof','fOpportunity'];
       inputs.forEach(id => {
-        document.getElementById(id).addEventListener('change', () => { state.page = 1; loadVehicles(); });
+        document.getElementById(id).addEventListener('change', () => {
+          syncChips();
+          state.page = 1;
+          loadVehicles();
+        });
       });
       document.getElementById('fSearch').addEventListener('input', () => {
         clearTimeout(state.debounceTimer);
@@ -1316,6 +1630,7 @@
       document.getElementById('fSunroof').checked = false;
       document.getElementById('fOpportunity').checked = false;
       document.getElementById('fSort').value = 'best_deal';
+      syncChips();
       state.page = 1;
       loadVehicles();
     }
