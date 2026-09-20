@@ -34,23 +34,33 @@ def _blur_box(image: np.ndarray, box: Box) -> None:
     image[y:y + h, x:x + w] = blurred
 
 
-def _find_top_right_watermark_boxes(image: np.ndarray) -> List[Box]:
-    """Cover the supplier's consistently placed upper-right watermark on all photos."""
+def _find_supplier_brand_boxes(image: np.ndarray) -> List[Box]:
+    """Return the fixed supplier-brand regions used by Autobell studio photos.
+
+    The entire upper sign is masked (including its centered slogan), while
+    the front plate is lower and left-of-center on the front three-quarter
+    photos.  Keeping the regions explicit prevents the upper mask from
+    spreading into the vehicle.
+    """
     height, width = image.shape[:2]
     if width < 80 or height < 80:
         return []
-    # Compact, fixed box covering exclusively the top-right watermark text
-    return [_clamp_box((int(0.68 * width), 0, int(0.32 * width), int(0.12 * height)), width, height)]
+    return [
+        # Full overhead sign: left logo, centered slogan, and right logo.
+        _clamp_box((int(0.08 * width), int(0.05 * height), int(0.88 * width), int(0.16 * height)), width, height),
+        # Front plate on the front three-quarter views.
+        _clamp_box((int(0.13 * width), int(0.61 * height), int(0.27 * width), int(0.18 * height)), width, height),
+    ]
 
 
 def sanitize_image(content: bytes) -> bytes:
-    """Blur the top-right supplier watermark cleanly without touching any part of the vehicle."""
+    """Blur supplier branding while leaving vehicle and pricing logic untouched."""
     array = np.frombuffer(content, dtype=np.uint8)
     image = cv2.imdecode(array, cv2.IMREAD_COLOR)
     if image is None:
         return content
 
-    boxes = _find_top_right_watermark_boxes(image)
+    boxes = _find_supplier_brand_boxes(image)
     for box in boxes:
         _blur_box(image, box)
 
