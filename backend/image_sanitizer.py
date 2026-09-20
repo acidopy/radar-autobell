@@ -46,12 +46,12 @@ def _find_supplier_brand_boxes(image: np.ndarray) -> List[Box]:
     return [
         # Protect the two upper corner logos independently so the mask does
         # not cover the vehicle roof or the whole background.
-        _clamp_box((int(0.02 * width), int(0.02 * height), int(0.18 * width), int(0.10 * height)), width, height),
-        _clamp_box((int(0.80 * width), int(0.02 * height), int(0.18 * width), int(0.10 * height)), width, height),
+        _clamp_box((int(0.02 * width), int(0.02 * height), int(0.14 * width), int(0.08 * height)), width, height),
+        _clamp_box((int(0.82 * width), int(0.02 * height), int(0.16 * width), int(0.08 * height)), width, height),
         # Some studio photos also carry a centered slogan in the same banner.
-        _clamp_box((int(0.38 * width), int(0.04 * height), int(0.24 * width), int(0.07 * height)), width, height),
+        _clamp_box((int(0.42 * width), int(0.04 * height), int(0.16 * width), int(0.05 * height)), width, height),
         # Front plate on the front three-quarter views.
-        _clamp_box((int(0.03 * width), int(0.74 * height), int(0.30 * width), int(0.15 * height)), width, height),
+        _clamp_box((int(0.05 * width), int(0.73 * height), int(0.20 * width), int(0.13 * height)), width, height),
     ]
 
 
