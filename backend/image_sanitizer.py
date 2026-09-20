@@ -65,19 +65,9 @@ def _find_studio_banner_box(image: np.ndarray) -> List[Box]:
         return [_clamp_box((x0 + x - int(0.035 * width), y0 + y - int(0.03 * height),
                             w + int(0.07 * width), h + int(0.06 * height)), width, height)]
 
-    # Fallback for lower-resolution originals where morphology does not form
-    # one contour. Require a broad blue span in the studio-only upper region
-    # before applying the fallback, so outdoor sky/backgrounds are untouched.
-    ys, xs = np.where(blue > 0)
-    if len(xs) < int(0.002 * blue.size):
-        return []
-    span_x = int(xs.max() - xs.min() + 1)
-    span_y = int(ys.max() - ys.min() + 1)
-    if span_x < int(0.30 * width) or span_y < int(0.02 * height):
-        return []
-    return [_clamp_box((x0 + int(xs.min()) - int(0.035 * width),
-                        y0 + int(ys.min()) - int(0.03 * height),
-                        span_x + int(0.07 * width), span_y + int(0.06 * height)), width, height)]
+    # Do not fall back to a broad blue-span box: outdoor sky and trees can
+    # occupy the same upper region, and must never become a giant mask.
+    return []
 
 
 def _find_supplier_brand_boxes(image: np.ndarray) -> List[Box]:
