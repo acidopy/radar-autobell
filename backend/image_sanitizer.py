@@ -25,13 +25,11 @@ def _blur_box(image: np.ndarray, box: Box) -> None:
     roi = image[y:y + h, x:x + w]
     if roi.size == 0:
         return
-    # Large enough kernel to make logos, license plates, and text unreadable while preserving natural background.
-    k = max(35, int(min(w, h) * 0.90) | 1)
-    if k % 2 == 0:
-        k += 1
-    blurred = cv2.GaussianBlur(roi, (k, k), 0)
-    blurred = cv2.GaussianBlur(blurred, (k, k), 0)
-    image[y:y + h, x:x + w] = blurred
+    # A blur can still leave letter silhouettes visible in thumbnails. Replace
+    # the whole protected region with its median color so no brand shape or
+    # plate text survives compression, resizing, or sharpening downstream.
+    fill = np.median(roi.reshape(-1, roi.shape[2]), axis=0).astype(np.uint8)
+    image[y:y + h, x:x + w] = fill
 
 
 def _find_supplier_brand_boxes(image: np.ndarray) -> List[Box]:
