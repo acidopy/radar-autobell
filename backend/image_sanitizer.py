@@ -32,6 +32,33 @@ def _blur_box(image: np.ndarray, box: Box) -> None:
     image[y:y + h, x:x + w] = fill
 
 
+def _find_studio_banner_box(image: np.ndarray) -> List[Box]:
+    """Find the long blue studio banner without masking outdoor backgrounds."""
+    height, width = image.shape[:2]
+    y0, y1 = int(0.04 * height), int(0.35 * height)
+    x0, x1 = int(0.04 * width), int(0.96 * width)
+    roi = image[y0:y1, x0:x1]
+    hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+    blue = cv2.inRange(hsv, np.array([80, 55, 70], dtype=np.uint8), np.array([115, 255, 255], dtype=np.uint8))
+    blue = cv2.morphologyEx(blue, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (21, 7)))
+    blue = cv2.morphologyEx(blue, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (7, 3)))
+    contours, _ = cv2.findContours(blue, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    candidates = []
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        aspect = w / max(h, 1)
+        global_y = y0 + y
+        if (w >= int(0.35 * width) and h >= max(8, int(0.02 * height))
+                and h <= int(0.12 * height) and global_y >= int(0.08 * height)
+                and aspect >= 4.0):
+            candidates.append((w * h, x, y, w, h))
+    if not candidates:
+        return []
+    _, x, y, w, h = max(candidates)
+    return [_clamp_box((x0 + x - int(0.015 * width), y0 + y - int(0.02 * height),
+                        w + int(0.03 * width), h + int(0.04 * height)), width, height)]
+
+
 def _find_supplier_brand_boxes(image: np.ndarray) -> List[Box]:
     """Return the fixed supplier-brand regions used by Autobell studio photos.
 
@@ -43,17 +70,16 @@ def _find_supplier_brand_boxes(image: np.ndarray) -> List[Box]:
     height, width = image.shape[:2]
     if width < 80 or height < 80:
         return []
-    return [
-        # Studio banner: both upper logos and the centered Autobell slogan
-        # share one horizontal sign, below the top edge and above the car.
-        _clamp_box((int(0.14 * width), int(0.10 * height), int(0.72 * width), int(0.18 * height)), width, height),
+    boxes = _find_studio_banner_box(image)
+    boxes.extend([
         # A few outdoor photos have an isolated top-right watermark instead.
         _clamp_box((int(0.82 * width), int(0.02 * height), int(0.16 * width), int(0.08 * height)), width, height),
         # Front plates vary between left-of-center three-quarter views and
         # centered studio views; keep both fallback regions narrow.
         _clamp_box((int(0.04 * width), int(0.70 * height), int(0.16 * width), int(0.13 * height)), width, height),
         _clamp_box((int(0.18 * width), int(0.64 * height), int(0.24 * width), int(0.16 * height)), width, height),
-    ]
+    ])
+    return boxes
 
 
 def sanitize_image(content: bytes) -> bytes:
