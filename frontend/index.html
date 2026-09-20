@@ -2577,7 +2577,7 @@
       card.innerHTML = `
         <div class="v-card-img">
           ${photo
-? `<img src="${API_BASE}/api/img?url=${encodeURIComponent(photo)}&v=14" alt="${title}" loading="lazy">`
+? `<img src="${API_BASE}/api/img?url=${encodeURIComponent(photo)}&v=15" alt="${title}" loading="lazy">`
             : '<div class="no-photo">🚙</div>'
           }
           ${isAdminMode ? '<span class="badge-opp" style="background:var(--gold);color:#000;top:8px;left:8px;bottom:auto;">⚡ VENDEDOR</span>' : ''}
@@ -2644,7 +2644,7 @@
         <div class="modal-thumbs">
           ${photos.map((p, idx) => `
             <div class="modal-thumb ${idx === 0 ? 'active' : ''}" onclick="changeModalPhoto('${p}', this)">
-              <img src="${API_BASE}/api/img?url=${encodeURIComponent(p)}&v=14" alt="Foto ${idx + 1}" loading="lazy">
+              <img src="${API_BASE}/api/img?url=${encodeURIComponent(p)}&v=15" alt="Foto ${idx + 1}" loading="lazy">
             </div>
           `).join('')}
         </div>
@@ -2697,7 +2697,7 @@
         <!-- MEDIA PRINCIPAL -->
         <div class="modal-media-wrap">
           ${mainPhoto
-            ? `<img id="modalMainImg" src="${API_BASE}/api/img?url=${encodeURIComponent(mainPhoto)}&v=14" alt="${title}">`
+            ? `<img id="modalMainImg" src="${API_BASE}/api/img?url=${encodeURIComponent(mainPhoto)}&v=15" alt="${title}">`
             : '<div style="font-size:3rem">🚙</div>'
           }
         </div>
@@ -2805,7 +2805,7 @@
 
     function changeModalPhoto(url, el) {
       const mainImg = document.getElementById('modalMainImg');
-      if (mainImg) mainImg.src = `${API_BASE}/api/img?url=${encodeURIComponent(url)}&v=14`;
+      if (mainImg) mainImg.src = `${API_BASE}/api/img?url=${encodeURIComponent(url)}&v=15`;
       document.querySelectorAll('.modal-thumb').forEach(t => t.classList.remove('active'));
       if (el) el.classList.add('active');
     }
