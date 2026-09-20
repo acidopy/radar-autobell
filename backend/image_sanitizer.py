@@ -49,7 +49,7 @@ def _find_supplier_brand_boxes(image: np.ndarray) -> List[Box]:
         # Full overhead sign: left logo, centered slogan, and right logo.
         _clamp_box((int(0.08 * width), int(0.05 * height), int(0.88 * width), int(0.16 * height)), width, height),
         # Front plate on the front three-quarter views.
-        _clamp_box((int(0.13 * width), int(0.61 * height), int(0.27 * width), int(0.18 * height)), width, height),
+        _clamp_box((int(0.08 * width), int(0.68 * height), int(0.38 * width), int(0.24 * height)), width, height),
     ]
 
 
