@@ -46,13 +46,13 @@ def _find_supplier_brand_boxes(image: np.ndarray) -> List[Box]:
     return [
         # Studio banner: both upper logos and the centered Autobell slogan
         # share one horizontal sign, below the top edge and above the car.
-        _clamp_box((int(0.10 * width), int(0.07 * height), int(0.80 * width), int(0.14 * height)), width, height),
+        _clamp_box((int(0.14 * width), int(0.10 * height), int(0.72 * width), int(0.18 * height)), width, height),
         # A few outdoor photos have an isolated top-right watermark instead.
         _clamp_box((int(0.82 * width), int(0.02 * height), int(0.16 * width), int(0.08 * height)), width, height),
         # Front plates vary between left-of-center three-quarter views and
         # centered studio views; keep both fallback regions narrow.
-        _clamp_box((int(0.04 * width), int(0.72 * height), int(0.18 * width), int(0.14 * height)), width, height),
-        _clamp_box((int(0.20 * width), int(0.72 * height), int(0.24 * width), int(0.14 * height)), width, height),
+        _clamp_box((int(0.04 * width), int(0.70 * height), int(0.16 * width), int(0.13 * height)), width, height),
+        _clamp_box((int(0.18 * width), int(0.64 * height), int(0.24 * width), int(0.16 * height)), width, height),
     ]
 
 
