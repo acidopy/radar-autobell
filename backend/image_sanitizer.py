@@ -74,10 +74,10 @@ def _find_supplier_brand_boxes(image: np.ndarray) -> List[Box]:
     boxes.extend([
         # A few outdoor photos have an isolated top-right watermark instead.
         _clamp_box((int(0.82 * width), int(0.02 * height), int(0.16 * width), int(0.08 * height)), width, height),
-        # Front plates vary between left-of-center three-quarter views and
-        # centered studio views; keep both fallback regions narrow.
+        # The front plate is left-of-center in the supplier's three-quarter
+        # views.  Keep one conservative region; a second center fallback
+        # caused two overlapping blocks that covered the bumper and grille.
         _clamp_box((int(0.04 * width), int(0.70 * height), int(0.16 * width), int(0.13 * height)), width, height),
-        _clamp_box((int(0.18 * width), int(0.64 * height), int(0.24 * width), int(0.16 * height)), width, height),
     ])
     return boxes
 
