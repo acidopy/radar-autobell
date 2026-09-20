@@ -70,6 +70,50 @@ def _find_studio_banner_box(image: np.ndarray) -> List[Box]:
     return []
 
 
+def _find_front_plate_box(image: np.ndarray) -> List[Box]:
+    """Find a bright front plate in centered/front-facing studio photos.
+
+    The existing fixed region is intentionally offset for three-quarter shots.
+    Head-on photos place the plate near the horizontal center, so detect its
+    light rectangular face instead of adding a broad mask to every photo.
+    """
+    height, width = image.shape[:2]
+    x0, x1 = int(0.18 * width), int(0.82 * width)
+    y0, y1 = int(0.48 * height), int(0.88 * height)
+    roi = image[y0:y1, x0:x1]
+    hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+    light = cv2.inRange(
+        hsv,
+        np.array([0, 0, 135], dtype=np.uint8),
+        np.array([180, 105, 255], dtype=np.uint8),
+    )
+    light = cv2.morphologyEx(
+        light,
+        cv2.MORPH_CLOSE,
+        cv2.getStructuringElement(cv2.MORPH_RECT, (max(5, int(0.012 * width)), 5)),
+    )
+    contours, _ = cv2.findContours(light, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    candidates = []
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        aspect = w / max(h, 1)
+        area = w * h
+        global_y = y0 + y
+        if (w >= int(0.07 * width) and h >= int(0.018 * height)
+                and h <= int(0.12 * height) and 2.0 <= aspect <= 6.5
+                and int(0.55 * height) <= global_y <= int(0.82 * height)
+                and area >= int(0.0015 * width * height)):
+            # Prefer the broadest plate-like rectangle nearest the image
+            # centre; floor reflections are lower and much less rectangular.
+            centre_distance = abs((x0 + x + w / 2) - width / 2) / width
+            candidates.append((area * (1.0 - centre_distance), x, y, w, h))
+    if not candidates:
+        return []
+    _, x, y, w, h = max(candidates)
+    return [_clamp_box((x0 + x - int(0.025 * width), y0 + y - int(0.025 * height),
+                        w + int(0.05 * width), h + int(0.05 * height)), width, height)]
+
+
 def _find_supplier_brand_boxes(image: np.ndarray) -> List[Box]:
     """Return the fixed supplier-brand regions used by Autobell studio photos.
 
@@ -83,6 +127,7 @@ def _find_supplier_brand_boxes(image: np.ndarray) -> List[Box]:
         return []
     studio_banner_boxes = _find_studio_banner_box(image)
     boxes = list(studio_banner_boxes)
+    boxes.extend(_find_front_plate_box(image))
     if studio_banner_boxes:
         # In the studio three-quarter shots the front plate sits left of
         # centre and above the old fixed mask. Use one unified protected area
