@@ -33,14 +33,20 @@ def _blur_box(image: np.ndarray, box: Box) -> None:
 
 
 def _find_studio_banner_box(image: np.ndarray) -> List[Box]:
-    """Find the long blue studio banner without masking outdoor backgrounds."""
+    """Find the complete blue studio banner without masking outdoor backgrounds."""
     height, width = image.shape[:2]
     y0, y1 = int(0.04 * height), int(0.35 * height)
     x0, x1 = int(0.04 * width), int(0.96 * width)
     roi = image[y0:y1, x0:x1]
     hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
     blue = cv2.inRange(hsv, np.array([80, 55, 70], dtype=np.uint8), np.array([115, 255, 255], dtype=np.uint8))
-    blue = cv2.morphologyEx(blue, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (21, 7)))
+    # The banner is often curved and broken into several blue sections by
+    # glare/text. Join those sections before looking for its bounding box.
+    blue = cv2.morphologyEx(
+        blue,
+        cv2.MORPH_CLOSE,
+        cv2.getStructuringElement(cv2.MORPH_RECT, (max(31, int(0.04 * width)), 9)),
+    )
     blue = cv2.morphologyEx(blue, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (7, 3)))
     contours, _ = cv2.findContours(blue, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     candidates = []
@@ -52,11 +58,26 @@ def _find_studio_banner_box(image: np.ndarray) -> List[Box]:
                 and h <= int(0.12 * height) and global_y >= int(0.08 * height)
                 and aspect >= 4.0):
             candidates.append((w * h, x, y, w, h))
-    if not candidates:
+    if candidates:
+        _, x, y, w, h = max(candidates)
+        # Expand beyond the blue pixels so the left/right logos and the white
+        # slogan cannot remain visible at the edges of the sign.
+        return [_clamp_box((x0 + x - int(0.035 * width), y0 + y - int(0.03 * height),
+                            w + int(0.07 * width), h + int(0.06 * height)), width, height)]
+
+    # Fallback for lower-resolution originals where morphology does not form
+    # one contour. Require a broad blue span in the studio-only upper region
+    # before applying the fallback, so outdoor sky/backgrounds are untouched.
+    ys, xs = np.where(blue > 0)
+    if len(xs) < int(0.002 * blue.size):
         return []
-    _, x, y, w, h = max(candidates)
-    return [_clamp_box((x0 + x - int(0.015 * width), y0 + y - int(0.02 * height),
-                        w + int(0.03 * width), h + int(0.04 * height)), width, height)]
+    span_x = int(xs.max() - xs.min() + 1)
+    span_y = int(ys.max() - ys.min() + 1)
+    if span_x < int(0.30 * width) or span_y < int(0.02 * height):
+        return []
+    return [_clamp_box((x0 + int(xs.min()) - int(0.035 * width),
+                        y0 + int(ys.min()) - int(0.03 * height),
+                        span_x + int(0.07 * width), span_y + int(0.06 * height)), width, height)]
 
 
 def _find_supplier_brand_boxes(image: np.ndarray) -> List[Box]:
@@ -70,15 +91,23 @@ def _find_supplier_brand_boxes(image: np.ndarray) -> List[Box]:
     height, width = image.shape[:2]
     if width < 80 or height < 80:
         return []
-    boxes = _find_studio_banner_box(image)
+    studio_banner_boxes = _find_studio_banner_box(image)
+    boxes = list(studio_banner_boxes)
+    if studio_banner_boxes:
+        # In the studio three-quarter shots the front plate sits left of
+        # centre and above the old fixed mask. Use one unified protected area
+        # rather than stacking overlapping rectangles over the bumper.
+        boxes.append(_clamp_box((int(0.15 * width), int(0.60 * height),
+                                 int(0.24 * width), int(0.18 * height)), width, height))
+
     boxes.extend([
         # A few outdoor photos have an isolated top-right watermark instead.
         _clamp_box((int(0.82 * width), int(0.02 * height), int(0.16 * width), int(0.08 * height)), width, height),
-        # The front plate is left-of-center in the supplier's three-quarter
-        # views.  Keep one conservative region; a second center fallback
-        # caused two overlapping blocks that covered the bumper and grille.
-        _clamp_box((int(0.04 * width), int(0.70 * height), int(0.16 * width), int(0.13 * height)), width, height),
     ])
+    if not studio_banner_boxes:
+        # Outdoor photos use a smaller, left-edge plate region.
+        boxes.append(_clamp_box((int(0.04 * width), int(0.70 * height),
+                                 int(0.16 * width), int(0.13 * height)), width, height))
     return boxes
 
 

@@ -76,10 +76,10 @@ async def proxy_image(url: str = Query(...), v: Optional[str] = Query(None)):
     """Fetch an Autobell vehicle photo, blur supplier logos, and return the result."""
     # Bump the sanitizer cache version when mask geometry changes so existing
     # in-memory entries cannot keep serving images with the old masks.
-    cache_key = f"{url}_{v or 'v17'}"
+    cache_key = f"{url}_{v or 'v19'}"
     if cache_key in _img_cache:
         return Response(content=_img_cache[cache_key], media_type="image/jpeg",
-                        headers={"Cache-Control": "public, max-age=3600, must-revalidate"})
+                        headers={"Cache-Control": "public, max-age=0, must-revalidate"})
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(url, headers={"Referer": "https://www.autobellglobal.com/"})
@@ -94,7 +94,7 @@ async def proxy_image(url: str = Query(...), v: Optional[str] = Query(None)):
         if len(_img_cache) < 500:
             _img_cache[cache_key] = content
         return Response(content=content, media_type="image/jpeg",
-                        headers={"Cache-Control": "public, max-age=3600, must-revalidate"})
+                        headers={"Cache-Control": "public, max-age=0, must-revalidate"})
     except httpx.RequestError as e:
         raise HTTPException(status_code=502, detail=str(e))
 # ─────────────────────────────────────────────────────────────────────────────
