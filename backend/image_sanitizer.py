@@ -55,7 +55,9 @@ def _find_studio_banner_box(image: np.ndarray) -> List[Box]:
         aspect = w / max(h, 1)
         global_y = y0 + y
         if (w >= int(0.35 * width) and h >= max(8, int(0.02 * height))
-                and h <= int(0.12 * height) and global_y >= int(0.08 * height)
+                # Some rear/side studio shots place the banner at 6–7% of
+                # the image height, above the older 8% cutoff.
+                and h <= int(0.12 * height) and global_y >= int(0.05 * height)
                 and aspect >= 4.0):
             candidates.append((w * h, x, y, w, h))
     if candidates:
